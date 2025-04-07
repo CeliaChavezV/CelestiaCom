@@ -1,61 +1,105 @@
 ---
 interface Props {
-	title: string;
-	body: string;
-	href: string;
+  title: string;
+  body: string;
+  href: string;
 }
 
 const { href, title, body } = Astro.props;
 ---
 
 <li class="link-card">
-	<a href={href}>
-		<h2>
-			{title}
-			<span>&rarr;</span>
-		</h2>
-		<p>
-			{body}
-		</p>
-	</a>
+  <a href={href}>
+    <h2>
+      {title}
+      <span>&rarr;</span>
+    </h2>
+    <p>
+      {body}
+    </p>
+  </a>
 </li>
+
 <style>
-	.link-card {
-		list-style: none;
-		display: flex;
-		padding: 1px;
-		background-color: #23262d;
-		background-image: none;
-		background-size: 400%;
-		border-radius: 7px;
-		background-position: 100%;
-		transition: background-position 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-	}
-	.link-card > a {
-		width: 100%;
-		text-decoration: none;
-		line-height: 1.4;
-		padding: calc(1.5rem - 1px);
-		border-radius: 8px;
-		color: white;
-		background-color: #23262d;
-		opacity: 0.8;
-	}
-	h2 {
-		margin: 0;
-		font-size: 1.25rem;
-		transition: color 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-	}
-	p {
-		margin-top: 0.5rem;
-		margin-bottom: 0;
-	}
-	.link-card:is(:hover, :focus-within) {
-		background-position: 0;
-		background-image: var(--accent-gradient);
-	}
-	.link-card:is(:hover, :focus-within) h2 {
-		color: rgb(var(--accent-light));
-	}
+  :root {
+    --azul-profundo: #0a1a35;
+    --azul-oscuro: #142850;
+    --azul-medio: #27496d;
+    --azul-claro: #3a7bd5;
+    --texto-blanco: #ffffff;
+    --texto-claro: #e8f1f5;
+    --acento-verde: #00c9a7;
+    --degradado-azul: linear-gradient(
+      45deg,
+      var(--azul-medio) 0%,
+      var(--azul-claro) 100%
+    );
+  }
+
+  .link-card {
+    list-style: none;
+    display: flex;
+    padding: 1px;
+    background-color: var(--azul-profundo);
+    background-image: none;
+    background-size: 400%;
+    border-radius: 8px;
+    background-position: 100%;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 
+      0 4px 6px rgba(0, 0, 0, 0.1),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    margin-bottom: 1rem;
+  }
+
+  .link-card > a {
+    width: 100%;
+    text-decoration: none;
+    line-height: 1.5;
+    padding: 1.5rem;
+    border-radius: 7px;
+    color: var(--texto-claro);
+    background-color: var(--azul-oscuro);
+    display: block;
+  }
+
+  .link-card h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--texto-blanco);
+    transition: color 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .link-card h2 span {
+    color: var(--acento-verde);
+    transition: transform 0.3s ease;
+  }
+
+  .link-card p {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+    color: var(--texto-claro);
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+
+  .link-card:is(:hover, :focus-within) {
+    background-image: var(--degradado-azul);
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 15px rgba(0, 0, 0, 0.2),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .link-card:is(:hover, :focus-within) h2 {
+    color: var(--texto-blanco);
+  }
+
+  .link-card:is(:hover, :focus-within) h2 span {
+    transform: translateX(3px);
+  }
 </style>
