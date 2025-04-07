@@ -1,0 +1,17 @@
+---
+import AuthForm from '../components/AuthForm.astro';
+---
+
+<Layout title="Iniciar Sesión">
+  <main class="auth-container">
+    <AuthForm mode="login" />
+  </main>
+</Layout>
+
+<style>
+  .auth-container {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2rem;
+  }
+</style>
