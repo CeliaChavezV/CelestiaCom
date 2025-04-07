@@ -1,6 +1,6 @@
 ---
 title: "Estación Terrena CDMX CDA"
-description: "Da clic para obtener información relevante sobre esta estación"
+description: "Da clic para obtener información relevante sobre esta estación terrena."
 image: "/images/fashion.jpg"
 pubDate: 2024-02-01
 tags: ["fashion", "sustainability", "lifestyle"]

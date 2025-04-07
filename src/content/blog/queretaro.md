@@ -1,6 +1,6 @@
 ---
-title: "Zero Waste Kitchen"
-description: "Transform your kitchen into a zero-waste zone with these practical tips."
+title: "Estación Terrena Querétaro"
+description: "Da clic para obtener información relevante sobre esta estación terrena."
 image: "/images/kitchen.jpg"
 pubDate: 2024-01-15
 tags: ["kitchen", "zero-waste", "home", "lifestyle"]

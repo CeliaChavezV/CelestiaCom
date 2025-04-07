@@ -1,6 +1,6 @@
 ---
-title: "Sustainable Living"
-description: "Simple steps towards a more sustainable lifestyle."
+title: "Estación Terrena Colima"
+description: "Da clic para obtener información relevante sobre esta estación terrena."
 image: "/images/sustainable.jpg"
 pubDate: 2024-01-01
 tags: ["lifestyle", "sustainability", "eco-friendly"]

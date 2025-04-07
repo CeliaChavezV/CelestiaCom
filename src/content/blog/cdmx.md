@@ -1,6 +1,6 @@
 ---
-title: "Renewable Energy at Home"
-description: "Guide to implementing renewable energy solutions in your home."
+title: "Estación Terrena CDMX"
+description: "Da clic para obtener información relevante sobre esta estación terrena."
 image: "/images/energy.jpg"
 pubDate: 2024-02-15
 tags: ["energy", "home", "sustainability"]
