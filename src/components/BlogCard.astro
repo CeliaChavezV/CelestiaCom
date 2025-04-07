@@ -19,31 +19,36 @@ const { title, description, image } = Astro.props;
 
 <style>
   .blog-card {
-    background: #0a192f;  /* Azul oscuro profesional */
-    border: 1px solid #64ffda;  /* Borde verde-azulado claro */
+    background: #07152b;  /* 2 tonos más oscuro que #0a192f */
+    border: 1px solid #64ffda;
     border-radius: 8px;
     overflow: hidden;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 
+      0 4px 6px rgba(0, 0, 0, 0.2),
+      inset 0 0 0 1px rgba(100, 255, 218, 0.2);  /* Borde interior sutil */
   }
   
   .blog-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    border-color: #e6f1ff;  /* Borde más claro al hacer hover */
+    box-shadow: 
+      0 10px 20px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(100, 255, 218, 0.3);
+    border-color: #e6f1ff;
+    background: #081a36;  /* Ligero cambio al hacer hover */
   }
   
   .blog-card img {
     width: 100%;
     height: 180px;
     object-fit: cover;
-    filter: brightness(0.8);
-    transition: filter 0.4s ease;
-    border-bottom: 1px solid #64ffda;  /* Borde inferior para la imagen */
+    filter: brightness(0.8) contrast(1.1);
+    transition: all 0.4s ease;
+    border-bottom: 1px solid rgba(100, 255, 218, 0.5);
   }
   
   .blog-card:hover img {
-    filter: brightness(1);
+    filter: brightness(0.9) contrast(1.2);
   }
   
   .content {
@@ -53,14 +58,15 @@ const { title, description, image } = Astro.props;
   h2 {
     margin: 0;
     font-size: 1.25rem;
-    color: #e6f1ff;  /* Blanco azulado claro */
+    color: #e6f1ff;
     margin-bottom: 0.75rem;
     font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
   
   p {
     margin: 0;
-    color: #ccd6f6;  /* Azul claro para el texto secundario */
+    color: #a8b2d1;  /* Un poco más oscuro que el anterior para mejor contraste */
     line-height: 1.5;
     font-size: 0.95rem;
   }
@@ -68,14 +74,16 @@ const { title, description, image } = Astro.props;
   .read-more {
     display: inline-block;
     margin-top: 1rem;
-    color: #64ffda;  /* Verde-azulado para el enlace */
+    color: #64ffda;
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
   
   .blog-card:hover .read-more {
     transform: translateX(4px);
-    color: #e6f1ff;  /* Color más claro al hacer hover */
+    color: #e6f1ff;
+    text-shadow: 0 1px 3px rgba(100, 255, 218, 0.4);
   }
 </style>
