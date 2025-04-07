@@ -35,7 +35,7 @@ const { title, description, image } = Astro.props;
     box-shadow: 
       0 12px 24px rgba(0, 0, 0, 0.4),
       inset 0 0 0 1px rgba(122, 139, 169, 0.4);
-    border-color: #a8b2d1;  /* Borde más claro al hacer hover */
+    border-color: #a8b2d1;
     background: #031225;
   }
 
@@ -73,7 +73,7 @@ const { title, description, image } = Astro.props;
   h2 {
     margin: 0;
     font-size: 1.25rem;
-    color: #e6f1ff;  /* Blanco azulado */
+    color: #e6f1ff;
     margin-bottom: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -81,7 +81,7 @@ const { title, description, image } = Astro.props;
   
   p {
     margin: 0;
-    color: #a8b2d1;  /* Azul grisáceo claro para texto */
+    color: #a8b2d1;
     line-height: 1.6;
     font-size: 0.95rem;
   }
@@ -89,7 +89,7 @@ const { title, description, image } = Astro.props;
   .read-more {
     display: inline-block;
     margin-top: 1rem;
-    color: #7a8ba9;  /* Azul grisáceo para acento */
+    color: #64ffda;  /* Verde-azul neón como antes */
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -103,13 +103,14 @@ const { title, description, image } = Astro.props;
     left: 0;
     width: 0;
     height: 1px;
-    background: #a8b2d1;
+    background: #64ffda;  /* Línea en verde-azul */
     transition: width 0.3s ease;
   }
   
   .blog-card:hover .read-more {
     transform: translateX(4px);
-    color: #ccd6f6;  /* Azul más claro al hacer hover */
+    color: #88ffea;  /* Verde-azul más claro al hacer hover */
+    text-shadow: 0 0 5px rgba(100, 255, 218, 0.3);
   }
   
   .blog-card:hover .read-more::after {
