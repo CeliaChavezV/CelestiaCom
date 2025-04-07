@@ -1,6 +1,6 @@
 ---
-title: "Eco-Friendly Fashion"
-description: "Sustainable fashion choices for a greener wardrobe."
+title: "Estación Terrena CDMX CDA"
+description: "Da clic para obtener información relevante sobre esta estación"
 image: "/images/fashion.jpg"
 pubDate: 2024-02-01
 tags: ["fashion", "sustainability", "lifestyle"]
