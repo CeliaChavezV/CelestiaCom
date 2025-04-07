@@ -19,30 +19,31 @@ const { title, description, image } = Astro.props;
 
 <style>
   .blog-card {
-    background: var(--azul-oscuro);
-    border: 1px solid var(--azul-medio);
+    background: #0a192f;  /* Azul oscuro profesional */
+    border: 1px solid #64ffda;  /* Borde verde-azulado claro */
     border-radius: 8px;
     overflow: hidden;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   }
   
   .blog-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    border-color: var(--acento-verde);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    border-color: #e6f1ff;  /* Borde más claro al hacer hover */
   }
   
   .blog-card img {
     width: 100%;
     height: 180px;
     object-fit: cover;
-    filter: brightness(0.8) saturate(0.7);
-    transition: all 0.4s ease;
+    filter: brightness(0.8);
+    transition: filter 0.4s ease;
+    border-bottom: 1px solid #64ffda;  /* Borde inferior para la imagen */
   }
   
   .blog-card:hover img {
-    filter: brightness(1) saturate(1.1);
+    filter: brightness(1);
   }
   
   .content {
@@ -52,14 +53,14 @@ const { title, description, image } = Astro.props;
   h2 {
     margin: 0;
     font-size: 1.25rem;
-    color: var(--texto-blanco);
+    color: #e6f1ff;  /* Blanco azulado claro */
     margin-bottom: 0.75rem;
     font-weight: 600;
   }
   
   p {
     margin: 0;
-    color: var(--texto-secundario);
+    color: #ccd6f6;  /* Azul claro para el texto secundario */
     line-height: 1.5;
     font-size: 0.95rem;
   }
@@ -67,13 +68,14 @@ const { title, description, image } = Astro.props;
   .read-more {
     display: inline-block;
     margin-top: 1rem;
-    color: var(--acento-verde);
+    color: #64ffda;  /* Verde-azulado para el enlace */
     font-size: 0.9rem;
     font-weight: 500;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
   }
   
   .blog-card:hover .read-more {
     transform: translateX(4px);
+    color: #e6f1ff;  /* Color más claro al hacer hover */
   }
 </style>
