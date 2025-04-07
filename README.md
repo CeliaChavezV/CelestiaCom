@@ -1,35 +1,33 @@
-# Low Power Blog
-![Low Power](public/LowPower.png)
-A minimalist blog template focused on energy efficiency and low-power computing. Built with Astro and designed to be lightweight and performant.
+# Ground Station Network for Emergency Communications
 
-![Low Power](public/LowPower3.png)
-![Low Power](public/LowPower2.png)
+## 🌍 Project Overview
+A web-based platform for managing and documenting emergency communications through a global network of verified ground stations. This system creates a centralized registry of transmitted/received files across participating stations while maintaining strict authentication protocols for operators.
+It allows verified operators to document all transmissions and receptions with timestamps, frequency data, and file attachments, while implementing strict authentication protocols to ensure only legitimate ground stations can participate. The system serves as a digital logbook for emergency satellite communications, featuring hardware validation, end-to-end encryption, and multi-level access controls to maintain data integrity and prevent unauthorized access, ultimately creating a reliable global network for crisis response communications.
 
-## Features
+## 🚀 Key Features
+- **Secure Ground Station Registry**  
+  Verified operator authentication with station validation
+- **File Management System**  
+  Chronological logging of all transmitted/received files per station
+- **Frequency Band Documentation**  
+  Automatic recording of transmission parameters (frequency, timestamp, data type)
+- **Multi-role Access Control**  
+  Tiered permissions for: station operators, emergency responders, and network admins
 
-- Minimalist monochrome design
-- Lightweight and fast loading
-- Content collections for blog posts and pages
-- Tag system for content organization
-- Responsive grid layout
-- Energy-efficient grayscale images
-- Used astro-imagetools
 
-## Getting Started
+## 🔐 Security Protocols
+1. **Station Operator Verification**
+   - Hardware fingerprint validation
+   - Manual credential review by network admins
+   - Two-factor authentication
 
-```bash
-npm install
-npm run dev
-npm run build  
-npm run preview
-```
+2. **Data Integrity Measures**
+   - SHA-256 checksums for all uploaded files
+   - Immutable transmission logs
+   - End-to-end encryption for sensitive data
 
-## Content Structure
-
-- `/src/content/blog/` - Blog posts
-- `/src/content/page/` - Static pages
-- `/public/images/` - Image assets
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 🌟 Benefits for Operators
+- Contribute to global emergency response infrastructure
+- Access aggregated communication patterns
+- Receive technical support for station setup
+- Participate in standardized emergency protocols
