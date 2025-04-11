@@ -36,16 +36,11 @@ export async function getPublicStations() {
 }
 
 // Obtener estación por ID
-export async function getStationById(stationId) {
-  try {
-    const docRef = doc(db, 'stations', stationId);
+export async function getStationById(id) {
+    const docRef = doc(db, 'stations', id);
     const docSnap = await getDoc(docRef);
     return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
-  } catch (error) {
-    console.error("Error getting station:", error);
-    return null;
   }
-}
 
 
 // Crear nueva estación

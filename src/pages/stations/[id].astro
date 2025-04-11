@@ -1,217 +1,97 @@
 ---
-// Importaciones
 import Layout from '../../layouts/Layout.astro';
-import { getCurrentUser } from '../../lib/auth';
 
-// Para GitHub Pages (build estático)
+// Función requerida pero vacía para build estático
 export async function getStaticPaths() {
   return [];
 }
 
 const { id } = Astro.params;
-const user = getCurrentUser();
 ---
 
 <Layout title="Estación Terrena">
-  <main class="station-container">
-    <!-- Contenedor para la carga dinámica -->
-    <div id="station-content">
+  <div id="station-view">
+    <div class="loading-state">
       <p>Cargando información de la estación...</p>
     </div>
-  </main>
+  </div>
 
-  <!-- Script que solo se ejecuta en el cliente -->
-  <script>
-    // Importaciones dinámicas
-    const { getStationById, updateStation, deleteStation, uploadStationFile, deleteStationFile } = await import('../../lib/stations');
-    const { getCurrentUser } = await import('../../lib/auth');
-    
-    // Elementos del DOM
-    const contentEl = document.getElementById('station-content');
-    const user = getCurrentUser();
-    const stationId = new URL(window.location.href).pathname.split('/').filter(Boolean).pop();
-    
-    // Cargar datos de la estación
+  <script is:inline>
+    // Carga diferida de Firebase solo en el cliente
     async function loadStation() {
       try {
-        const station = await getStationById(stationId);
+        const { initializeApp } = await import('firebase/app');
+        const { getFirestore, doc, getDoc } = await import('firebase/firestore');
         
-        if (!station) {
+        const firebaseConfig = {
+          apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
+          authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
+          projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
+          storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
+          messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+          appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        const stationId = window.location.pathname.split('/').pop();
+        const docRef = doc(db, 'stations', stationId);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
           window.location.href = '/404';
           return;
         }
         
-        const isOwner = user && station.ownerId === user.uid;
-        
-        // Renderizar la estación
-        contentEl.innerHTML = `
-          <div class="station-header">
-            <h1>${station.name}</h1>
-            ${isOwner ? `
-              <div class="station-actions">
-                <a href="/stations/${stationId}/edit" class="btn">Editar</a>
-                <button onclick="handleDeleteStation()" class="btn danger">Eliminar</button>
-              </div>
-            ` : ''}
-          </div>
-          
-          <p class="station-description">${station.description}</p>
-          
-          ${isOwner ? `
-            <div class="visibility-toggle">
-              <label>
-                <input 
-                  type="checkbox" 
-                  ${station.isPublic ? 'checked' : ''}
-                  onchange="handleToggleVisibility(event)"
-                />
-                <span>Estación pública (visible para todos)</span>
-              </label>
-            </div>
-          ` : ''}
-          
-          <section class="files-section">
-            <h2>Archivos ${station.files?.length ? `(${station.files.length})` : ''}</h2>
-            
-            ${station.files?.length > 0 ? `
-              <div class="files-grid">
-                ${station.files.map(file => `
-                  <div class="file-card">
-                    <a href="${file.url}" target="_blank" class="file-link">
-                      <div class="file-icon">${getFileIcon(file.type)}</div>
-                      <div class="file-info">
-                        <div class="file-name">${file.name}</div>
-                        <div class="file-meta">
-                          ${formatFileSize(file.size)} • ${new Date(file.uploadedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </a>
-                    ${isOwner ? `
-                      <button 
-                        onclick="handleDeleteFile('${file.name}')" 
-                        class="delete-btn"
-                        title="Eliminar archivo"
-                      >
-                        🗑️
-                      </button>
-                    ` : ''}
-                  </div>
-                `).join('')}
-              </div>
-            ` : `
-              <p class="empty-files">No hay archivos en esta estación</p>
-            `}
-            
-            ${isOwner ? `
-              <div class="upload-area">
-                <label for="file-upload" class="upload-label">
-                  <span>+ Subir archivo</span>
-                  <input 
-                    type="file" 
-                    id="file-upload" 
-                    onchange="handleFileUpload(event)"
-                  />
-                </label>
-              </div>
-            ` : ''}
-          </section>
-        `;
-        
-        // Funciones de manejo (solo para dueños)
-        if (isOwner) {
-          window.handleDeleteStation = async () => {
-            if (confirm('¿Estás seguro de eliminar esta estación?')) {
-              try {
-                await deleteStation(stationId, user.uid);
-                window.location.href = '/';
-              } catch (error) {
-                showError(error.message);
-              }
-            }
-          };
-          
-          window.handleFileUpload = async (event) => {
-            const fileInput = event.target;
-            if (fileInput.files.length > 0) {
-              try {
-                await uploadStationFile(stationId, fileInput.files[0], user.uid);
-                loadStation(); // Recargar
-              } catch (error) {
-                showError(error.message);
-              }
-            }
-          };
-          
-          window.handleDeleteFile = async (fileName) => {
-            if (confirm('¿Estás seguro de eliminar este archivo?')) {
-              try {
-                await deleteStationFile(stationId, fileName, user.uid);
-                loadStation(); // Recargar
-              } catch (error) {
-                showError(error.message);
-              }
-            }
-          };
-          
-          window.handleToggleVisibility = async (e) => {
-            try {
-              await updateStation(stationId, { isPublic: e.target.checked }, user.uid);
-              loadStation(); // Recargar
-            } catch (error) {
-              showError(error.message);
-            }
-          };
-        }
+        const station = { id: docSnap.id, ...docSnap.data() };
+        renderStation(station);
       } catch (error) {
-        showError('Error al cargar la estación');
+        console.error('Error:', error);
+        document.getElementById('station-view').innerHTML = `
+          <div class="error-state">
+            <p>Error al cargar la estación</p>
+            <button onclick="window.location.reload()">Reintentar</button>
+          </div>
+        `;
       }
     }
-    
-    // Funciones de utilidad
-    function getFileIcon(fileType) {
-      if (!fileType) return '📄';
-      if (fileType.includes('image')) return '🖼️';
-      if (fileType.includes('video')) return '🎬';
-      if (fileType.includes('audio')) return '🎵';
-      if (fileType.includes('pdf')) return '📕';
-      return '📄';
-    }
-    
-    function formatFileSize(bytes) {
-      if (!bytes) return '0 KB';
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    }
-    
-    function showError(message) {
-      contentEl.innerHTML += `
-        <div class="error-message">
-          ${message}
+
+    function renderStation(station) {
+      document.getElementById('station-view').innerHTML = `
+        <div class="station-detail">
+          <h1>${station.name}</h1>
+          <p class="description">${station.description}</p>
+          <!-- Añade más detalles de la estación aquí -->
         </div>
       `;
     }
-    
-    // Iniciar carga
-    loadStation();
-  </script>
-</Layout>
 
-<style>
-  /* Tus estilos existentes */
-  .station-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-  
-  .error-message {
-    color: red;
-    margin: 1rem 0;
-    padding: 1rem;
-    background: rgba(255, 0, 0, 0.1);
-    border-radius: 4px;
-  }
-  
-  /* Añade aquí el resto de tus estilos */
-</style>
+    // Iniciar carga cuando el DOM esté listo
+    if (document.readyState !== 'loading') {
+      loadStation();
+    } else {
+      document.addEventListener('DOMContentLoaded', loadStation);
+    }
+  </script>
+
+  <style>
+    .station-detail {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .loading-state, .error-state {
+      text-align: center;
+      padding: 3rem;
+    }
+    .error-state button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</Layout>
