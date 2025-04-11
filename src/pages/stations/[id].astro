@@ -1,6 +1,13 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getStationById, updateStation, deleteStation, uploadStationFile, deleteStationFile, getPublicStations } from '../../lib/stations';
+import { 
+  getStationById, 
+  updateStation, 
+  deleteStation, 
+  uploadStationFile, 
+  deleteStationFile, 
+  getPublicStations 
+} from '../../lib/stations';
 import { getCurrentUser } from '../../lib/auth';
 
 export async function getStaticPaths() {
