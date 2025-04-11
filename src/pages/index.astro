@@ -2,7 +2,6 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
-// Solo contenido estático durante el build
 const posts = await getCollection('blog');
 ---
 
@@ -23,21 +22,17 @@ const posts = await getCollection('blog');
     </section>
 
     <div id="stations-app">
-      <!-- Las estaciones se cargarán aquí dinámicamente -->
       <div class="loading-message">Cargando estaciones...</div>
     </div>
   </main>
 
-  <!-- Script para carga dinámica en el cliente -->
   <script is:inline>
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // Cargar Firebase y funciones necesarias
         const { initializeApp } = await import('firebase/app');
         const { getFirestore, collection, query, where, getDocs } = await import('firebase/firestore');
         const { getAuth } = await import('firebase/auth');
         
-        // Configuración de Firebase
         const firebaseConfig = {
           apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
           authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -47,12 +42,10 @@ const posts = await getCollection('blog');
           appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Obtener estaciones públicas
         const publicStationsQuery = query(
           collection(db, 'stations'), 
           where('isPublic', '==', true)
@@ -63,7 +56,6 @@ const posts = await getCollection('blog');
           ...doc.data()
         }));
 
-        // Obtener estaciones del usuario si está autenticado
         let userStations = [];
         const user = auth.currentUser;
         
@@ -79,7 +71,6 @@ const posts = await getCollection('blog');
           }));
         }
 
-        // Renderizar las estaciones
         const appContainer = document.getElementById('stations-app');
         appContainer.innerHTML = `
           <section class="stations-section">
@@ -121,6 +112,19 @@ const posts = await getCollection('blog');
   </script>
 
   <style>
+    :root {
+      --azul-oscuro: #020c1b;
+      --azul-medio: #0a192f;
+      --azul-claro: #64d8ff;
+      --texto-claro: #e6f1ff;
+      --accent-color: #64d8ff;
+      --accent-dark: #52b8e0;
+      --card-bg: var(--azul-oscuro);
+      --card-border: var(--azul-claro);
+      --text-secondary: #8892b0;
+      --error-color: #ff6b6b;
+    }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
@@ -136,28 +140,46 @@ const posts = await getCollection('blog');
     
     .card, .station-card {
       background: var(--card-bg);
+      color: var(--azul-claro);
+      border: 1px solid var(--card-border);
       border-radius: 8px;
       padding: 1.5rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
     .station-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      border-color: var(--texto-claro);
     }
     
     .station-card.owner {
       border-left: 4px solid var(--accent-color);
+      position: relative;
+    }
+    
+    .station-card h3 {
+      color: var(--azul-claro);
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+    }
+    
+    .station-card p {
+      color: rgba(100, 216, 255, 0.8);
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
     
     .badge {
       display: inline-block;
       background: var(--accent-color);
-      color: white;
+      color: var(--azul-oscuro);
       padding: 0.25rem 0.5rem;
       border-radius: 4px;
       font-size: 0.8rem;
       margin-top: 0.5rem;
+      font-weight: bold;
     }
     
     .button {
@@ -166,16 +188,19 @@ const posts = await getCollection('blog');
       border-radius: 4px;
       text-decoration: none;
       font-weight: 500;
-      transition: background 0.3s ease;
+      transition: all 0.3s ease;
     }
     
     .primary {
       background: var(--accent-color);
-      color: white;
+      color: var(--azul-oscuro);
+      border: 1px solid transparent;
     }
     
     .primary:hover {
-      background: var(--accent-dark);
+      background: transparent;
+      color: var(--accent-color);
+      border-color: var(--accent-color);
     }
     
     .loading-message, .error-message {
