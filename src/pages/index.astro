@@ -2,100 +2,152 @@
 import Layout from '../layouts/Layout.astro';
 import BlogCard from '../components/BlogCard.astro';
 import { getCollection } from 'astro:content';
-
-const posts = await getCollection('blog');
----
-
-<Layout title="CelestiaCom">
-	<main>
-		<div class="blog-grid">
-			{posts.map(post => (
-				<a href={`/${post.slug}`} class="card-link">
-					<BlogCard
-						title={post.data.title}
-						description={post.data.description}
-						image={post.data.image}
-					/>
-				</a>
-			))}
-		</div>
-	</main>
-</Layout>
-
-<style>
-	:root {
-		--azul-oscuro: #0a192f;
-		--azul-medio: #172a45;
-		--texto-claro: #e6f1ff;
-		--destacado: #64ffda; /* Color de acento para hover */
-	}
-	
-	main {
-		padding: 2rem;
-		max-width: 1400px;
-		margin: 0 auto;
-		background-color: var(--azul-oscuro);
-	}
-	
-	.blog-grid {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 2rem;
-	}
-	
-	.card-link {
-		text-decoration: none;
-		transition: transform 0.3s ease;
-	}
-	
-	.card-link:hover {
-		transform: translateY(-5px);
-	}
-	
-	@media (max-width: 1200px) {
-		.blog-grid {
-			grid-template-columns: repeat(3, 1fr);
-		}
-	}
-	
-	@media (max-width: 900px) {
-		.blog-grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
-	}
-	
-	@media (max-width: 600px) {
-		.blog-grid {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>
-
-
----
 import { getPublicStations, getUserStations } from '../lib/stations';
 import { getCurrentUser } from '../lib/auth';
 
-const publicStations = await getPublicStations();
-const user = getCurrentUser();
+// Obtener posts del blog
+const posts = await getCollection('blog');
+
+// Obtener estaciones
+const publicStations = getPublicStations();
+const user = typeof window !== 'undefined' ? getCurrentUser() : null;
 const userStations = user ? getUserStations() : [];
 ---
 
-<main>
-  <!-- Estaciones públicas -->
-  <h2>Estaciones Terrestres</h2>
-  {publicStations.map(station => (
-    <a href={`/stations/${station.id}`}>{station.name}</a>
-  ))}
+<Layout title="CelestiaCom">
+  <main>
+    <!-- Sección del Blog -->
+    <section class="blog-section">
+      <h1>Últimas Publicaciones</h1>
+      <div class="blog-grid">
+        {posts.map(post => (
+          <a href={`/${post.slug}`} class="card-link">
+            <BlogCard
+              title={post.data.title}
+              description={post.data.description}
+              image={post.data.image}
+            />
+          </a>
+        ))}
+      </div>
+    </section>
 
-  <!-- Estaciones del usuario (solo si logueado) -->
-  {user && (
-    <>
-      <h2>Mis Estaciones</h2>
-      {userStations.map(station => (
-        <a href={`/stations/${station.id}`}>{station.name}</a>
-      ))}
-      <a href="/stations/new">+ Nueva Estación</a>
-    </>
-  )}
-</main>
+    <!-- Sección de Estaciones -->
+    <section class="stations-section">
+      <h1>Estaciones Terrestres</h1>
+      
+      <!-- Estaciones públicas -->
+      <div class="stations-grid">
+        {publicStations.map(station => (
+          <a href={`/stations/${station.id}`} class="station-card">
+            <h3>{station.name}</h3>
+            <p>{station.description}</p>
+          </a>
+        ))}
+      </div>
+
+      <!-- Estaciones del usuario -->
+      {user && (
+        <>
+          <h2>Mis Estaciones</h2>
+          <div class="stations-grid">
+            {userStations.map(station => (
+              <a href={`/stations/${station.id}`} class="station-card">
+                <h3>{station.name}</h3>
+                <p>{station.description}</p>
+              </a>
+            ))}
+          </div>
+          <a href="/stations/new" class="new-station-btn">+ Nueva Estación</a>
+        </>
+      )}
+    </section>
+  </main>
+</Layout>
+
+<style>
+  :root {
+    --azul-oscuro: #0a192f;
+    --azul-medio: #172a45;
+    --texto-claro: #e6f1ff;
+    --destacado: #64ffda;
+  }
+  
+  main {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: var(--azul-oscuro);
+    color: var(--texto-claro);
+  }
+  
+  section {
+    margin-bottom: 3rem;
+  }
+  
+  h1, h2 {
+    color: var(--destacado);
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Estilos del Blog */
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  .card-link {
+    text-decoration: none;
+    transition: transform 0.3s ease;
+  }
+  
+  .card-link:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Estilos de Estaciones */
+  .stations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .station-card {
+    background: var(--azul-medio);
+    padding: 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(100, 255, 218, 0.1);
+  }
+  
+  .station-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--destacado);
+  }
+  
+  .new-station-btn {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.8rem 1.5rem;
+    background: transparent;
+    color: var(--destacado);
+    border: 1px solid var(--destacado);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .new-station-btn:hover {
+    background: rgba(100, 255, 218, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    .blog-grid, .stations-grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+  }
+</style>
