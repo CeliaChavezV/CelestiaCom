@@ -1,21 +1,22 @@
 ---
-// src/pages/stations/new.astro
 import { saveUserStation } from '../../lib/stations';
 
 const handleSubmit = (e) => {
   e.preventDefault();
-  const station = {
-    name: e.target.name.value,
-    description: e.target.description.value,
+  const formData = new FormData(e.target);
+  const newStation = {
+    name: formData.get('name'),
+    description: formData.get('description'),
     files: []
   };
-  saveUserStation(station);
+  
+  saveUserStation(newStation);
   window.location.href = '/';
 };
 ---
 
 <form on:submit={handleSubmit}>
   <input type="text" name="name" placeholder="Nombre" required>
-  <textarea name="description"></textarea>
-  <button type="submit">Guardar</button>
+  <textarea name="description" placeholder="Descripción"></textarea>
+  <button type="submit">Crear Estación</button>
 </form>
