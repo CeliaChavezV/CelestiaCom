@@ -4,6 +4,7 @@ import { astroImageTools } from "astro-imagetools";
 export default defineConfig({
   site: 'https://celiachavezv.github.io',
   base: '/CelestiaCom',
+  output: 'static',
   trailingSlash: 'always',
   integrations: [astroImageTools],
   vite: {

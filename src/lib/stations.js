@@ -22,10 +22,10 @@ import {
 
 // Obtener todas las estaciones públicas
 export async function getPublicStations() {
-  const q = query(collection(db, 'stations'), where('isPublic', '==', true));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-}
+    const q = query(collection(db, 'stations'), where('isPublic', '==', true));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
 
 // Obtener estaciones de un usuario específico
 export async function getUserStations(userId) {

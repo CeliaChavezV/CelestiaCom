@@ -1,33 +1,25 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { 
-  getStationById, 
-  updateStation, 
-  deleteStation, 
-  uploadStationFile, 
-  deleteStationFile, 
-  getPublicStations 
-} from '../../lib/stations';
+import { getStationById, getPublicStations } from '../../lib/stations';
 import { getCurrentUser } from '../../lib/auth';
 
 export async function getStaticPaths() {
-  // Obtener todas las estaciones públicas para pre-renderizar
+  // Obtener solo estaciones públicas para pre-renderizar
   const publicStations = await getPublicStations();
   
   return publicStations.map(station => ({
     params: { id: station.id },
-    props: { station }
+    props: { preloadedStation: station }
   }));
 }
 
 const { id } = Astro.params;
-const { station: staticStation } = Astro.props;
-let station = staticStation;
+const { preloadedStation } = Astro.props;
+let station = preloadedStation;
 const user = getCurrentUser();
-const isOwner = user && station?.ownerId === user.uid;
 
 // Si la estación no está pre-renderizada (ej: estación privada), cargarla dinámicamente
-if (!station && typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && !station) {
   station = await getStationById(id);
 }
 
@@ -35,215 +27,186 @@ if (!station) {
   return Astro.redirect('/404');
 }
 
+const isOwner = user && station.ownerId === user.uid;
+
+// Funciones para manejar interacciones (solo en cliente)
 let error = null;
 let success = null;
 
-const handleDeleteStation = async () => {
-  if (!isOwner) return;
-  
-  if (confirm('¿Estás seguro de eliminar esta estación? Esta acción no se puede deshacer.')) {
-    try {
-      await deleteStation(id, user.uid);
-      window.location.href = '/';
-    } catch (err) {
-      error = err.message;
-    }
-  }
-};
+if (typeof window !== 'undefined') {
+  const { 
+    updateStation, 
+    deleteStation, 
+    uploadStationFile, 
+    deleteStationFile 
+  } = await import('../../lib/stations');
 
-const handleFileUpload = async (event) => {
-  if (!isOwner) return;
-  
-  const fileInput = event.target;
-  const files = fileInput.files;
-  
-  if (files.length > 0) {
+  window.handleDeleteStation = async () => {
+    if (!isOwner) return;
+    
+    if (confirm('¿Estás seguro de eliminar esta estación?')) {
+      try {
+        await deleteStation(id, user.uid);
+        window.location.href = '/';
+      } catch (err) {
+        error = err.message;
+      }
+    }
+  };
+
+  window.handleFileUpload = async (event) => {
+    if (!isOwner) return;
+    
+    const fileInput = event.target;
+    const files = fileInput.files;
+    
+    if (files.length > 0) {
+      try {
+        await uploadStationFile(id, files[0], user.uid);
+        success = 'Archivo subido correctamente';
+        error = null;
+        fileInput.value = '';
+        station = await getStationById(id);
+      } catch (err) {
+        error = err.message;
+        success = null;
+      }
+    }
+  };
+
+  window.handleDeleteFile = async (fileName) => {
+    if (!isOwner) return;
+    
+    if (confirm('¿Estás seguro de eliminar este archivo?')) {
+      try {
+        await deleteStationFile(id, fileName, user.uid);
+        success = 'Archivo eliminado correctamente';
+        error = null;
+        station = await getStationById(id);
+      } catch (err) {
+        error = err.message;
+        success = null;
+      }
+    }
+  };
+
+  window.handleToggleVisibility = async (e) => {
+    if (!isOwner) return;
+    
     try {
-      await uploadStationFile(id, files[0], user.uid);
-      success = 'Archivo subido correctamente';
+      await updateStation(id, { isPublic: e.target.checked }, user.uid);
+      success = 'Visibilidad actualizada';
       error = null;
-      fileInput.value = '';
-      station = await getStationById(id);
+      station.isPublic = e.target.checked;
     } catch (err) {
       error = err.message;
       success = null;
     }
-  }
-};
-
-const handleDeleteFile = async (fileName) => {
-  if (!isOwner) return;
-  
-  if (confirm('¿Estás seguro de eliminar este archivo?')) {
-    try {
-      await deleteStationFile(id, fileName, user.uid);
-      success = 'Archivo eliminado correctamente';
-      error = null;
-      station = await getStationById(id);
-    } catch (err) {
-      error = err.message;
-      success = null;
-    }
-  }
-};
-
-const handleToggleVisibility = async (e) => {
-  if (!isOwner) return;
-  
-  try {
-    await updateStation(id, { isPublic: e.target.checked }, user.uid);
-    success = 'Visibilidad actualizada';
-    error = null;
-    station.isPublic = e.target.checked;
-  } catch (err) {
-    error = err.message;
-    success = null;
-  }
-};
----
-
+  };
+}
 ---
 
 <Layout title={`${station.name} | CelestiaCom`}>
   <main class="station-detail">
-    <h1>{station.name}</h1>
-    <p class="description">{station.description}</p>
+    <div class="station-header">
+      <h1>{station.name}</h1>
+      {isOwner && (
+        <div class="station-actions">
+          <a href={`/stations/${id}/edit`} class="btn">Editar</a>
+          <button onclick="handleDeleteStation()" class="btn danger">Eliminar</button>
+        </div>
+      )}
+    </div>
     
-    {station.files?.length > 0 && (
-      <section class="files-section">
-        <h2>Archivos</h2>
+    <p class="station-description">{station.description}</p>
+    
+    {isOwner && (
+      <div class="visibility-toggle">
+        <label>
+          <input 
+            type="checkbox" 
+            checked={station.isPublic} 
+            onchange="handleToggleVisibility(event)"
+          />
+          <span>Estación pública (visible para todos)</span>
+        </label>
+      </div>
+    )}
+    
+    {error && <div class="alert error">{error}</div>}
+    {success && <div class="alert success">{success}</div>}
+    
+    <section class="files-section">
+      <h2>Archivos {station.files?.length ? `(${station.files.length})` : ''}</h2>
+      
+      {station.files?.length > 0 ? (
         <div class="files-grid">
           {station.files.map(file => (
             <div class="file-card">
               <a href={file.url} target="_blank" class="file-link">
-                <span class="file-icon">{getFileIcon(file.type)}</span>
-                <span class="file-name">{file.name}</span>
+                <div class="file-icon">{getFileIcon(file.type)}</div>
+                <div class="file-info">
+                  <div class="file-name">{file.name}</div>
+                  <div class="file-meta">
+                    {formatFileSize(file.size)} • {formatDate(file.uploadedAt)}
+                  </div>
+                </div>
               </a>
               {isOwner && (
                 <button 
-                  on:click={() => handleDeleteFile(file.name)} 
-                  class="delete-button"
+                  onclick="handleDeleteFile('${file.name}')" 
+                  class="delete-btn"
+                  title="Eliminar archivo"
                 >
-                  Eliminar
+                  🗑️
                 </button>
               )}
             </div>
           ))}
         </div>
-      </section>
-    )}
-    
-    {isOwner && (
-      <section class="upload-section">
-        <h2>Subir nuevo archivo</h2>
-        <input 
-          type="file" 
-          id="file-upload" 
-          on:change={handleFileUpload}
-        />
-        <label for="file-upload" class="upload-button">
-          Seleccionar archivo
-        </label>
-      </section>
-    )}
+      ) : (
+        <p class="empty-files">No hay archivos en esta estación</p>
+      )}
+      
+      {isOwner && (
+        <div class="upload-area">
+          <label for="file-upload" class="upload-label">
+            <span>+ Subir archivo</span>
+            <input 
+              type="file" 
+              id="file-upload" 
+              onchange="handleFileUpload(event)"
+            />
+          </label>
+        </div>
+      )}
+    </section>
   </main>
 </Layout>
 
 <style>
-  .station-detail {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-  
-  .description {
-    color: var(--text-secondary);
-    margin-bottom: 2rem;
-  }
-  
-  .files-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-    margin: 1.5rem 0;
-  }
-  
-  .file-card {
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .file-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-decoration: none;
-    color: inherit;
-    margin-bottom: 0.5rem;
-  }
-  
-  .file-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .file-name {
-    text-align: center;
-    word-break: break-word;
-  }
-  
-  .delete-button {
-    background: var(--error-color);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  
-  .delete-button:hover {
-    background: var(--error-dark);
-  }
-  
-  .upload-section {
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
-  }
-  
-  #file-upload {
-    display: none;
-  }
-  
-  .upload-button {
-    display: inline-block;
-    background: var(--accent-color);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  
-  .upload-button:hover {
-    background: var(--accent-dark);
-  }
+  /* Tus estilos existentes */
 </style>
 
 <script>
+  // Funciones de utilidad para el cliente
   function getFileIcon(fileType) {
     if (!fileType) return '📄';
-    
     if (fileType.includes('image')) return '🖼️';
     if (fileType.includes('video')) return '🎬';
     if (fileType.includes('audio')) return '🎵';
     if (fileType.includes('pdf')) return '📕';
-    
     return '📄';
+  }
+
+  function formatFileSize(bytes) {
+    if (!bytes) return '0 KB';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString();
   }
 </script>
