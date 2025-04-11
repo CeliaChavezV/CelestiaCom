@@ -1,17 +1,48 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getStationById } from '../../lib/stations';
+import { getStationById, updateStation, deleteStation, uploadStationFile, deleteStationFile, getPublicStations } from '../../lib/stations';
 import { getCurrentUser } from '../../lib/auth';
-import { uploadStationFile, deleteStationFile } from '../../lib/stations';
+
+export async function getStaticPaths() {
+  // Obtener todas las estaciones públicas para pre-renderizar
+  const publicStations = await getPublicStations();
+  
+  return publicStations.map(station => ({
+    params: { id: station.id },
+    props: { station }
+  }));
+}
 
 const { id } = Astro.params;
-const station = await getStationById(id);
+const { station: staticStation } = Astro.props;
+let station = staticStation;
 const user = getCurrentUser();
-const isOwner = user && station?.owner === user.uid;
+const isOwner = user && station?.ownerId === user.uid;
+
+// Si la estación no está pre-renderizada (ej: estación privada), cargarla dinámicamente
+if (!station && typeof window !== 'undefined') {
+  station = await getStationById(id);
+}
 
 if (!station) {
   return Astro.redirect('/404');
 }
+
+let error = null;
+let success = null;
+
+const handleDeleteStation = async () => {
+  if (!isOwner) return;
+  
+  if (confirm('¿Estás seguro de eliminar esta estación? Esta acción no se puede deshacer.')) {
+    try {
+      await deleteStation(id, user.uid);
+      window.location.href = '/';
+    } catch (err) {
+      error = err.message;
+    }
+  }
+};
 
 const handleFileUpload = async (event) => {
   if (!isOwner) return;
@@ -21,11 +52,14 @@ const handleFileUpload = async (event) => {
   
   if (files.length > 0) {
     try {
-      const uploadedFile = await uploadStationFile(id, files[0], user.uid);
-      // Aquí deberías actualizar la lista de archivos en Firestore
-      window.location.reload();
-    } catch (error) {
-      alert('Error al subir archivo: ' + error.message);
+      await uploadStationFile(id, files[0], user.uid);
+      success = 'Archivo subido correctamente';
+      error = null;
+      fileInput.value = '';
+      station = await getStationById(id);
+    } catch (err) {
+      error = err.message;
+      success = null;
     }
   }
 };
@@ -36,13 +70,31 @@ const handleDeleteFile = async (fileName) => {
   if (confirm('¿Estás seguro de eliminar este archivo?')) {
     try {
       await deleteStationFile(id, fileName, user.uid);
-      // Aquí deberías actualizar la lista de archivos en Firestore
-      window.location.reload();
-    } catch (error) {
-      alert('Error al eliminar archivo: ' + error.message);
+      success = 'Archivo eliminado correctamente';
+      error = null;
+      station = await getStationById(id);
+    } catch (err) {
+      error = err.message;
+      success = null;
     }
   }
 };
+
+const handleToggleVisibility = async (e) => {
+  if (!isOwner) return;
+  
+  try {
+    await updateStation(id, { isPublic: e.target.checked }, user.uid);
+    success = 'Visibilidad actualizada';
+    error = null;
+    station.isPublic = e.target.checked;
+  } catch (err) {
+    error = err.message;
+    success = null;
+  }
+};
+---
+
 ---
 
 <Layout title={`${station.name} | CelestiaCom`}>
