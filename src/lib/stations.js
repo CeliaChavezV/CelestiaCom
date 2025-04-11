@@ -5,7 +5,9 @@ export async function getPublicStations() {
   }
   
   // Estaciones del usuario (guardadas en localStorage)
-  export function getUserStations() {
+export function getUserStations() {
+    // Solo para build, devuelve un array vacío
+    if (typeof window === 'undefined') return [];
     return JSON.parse(localStorage.getItem('userStations')) || [];
   }
   
