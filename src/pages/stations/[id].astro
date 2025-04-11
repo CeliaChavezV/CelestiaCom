@@ -1,227 +1,217 @@
 ---
-// 1. Importaciones
+// Importaciones
 import Layout from '../../layouts/Layout.astro';
 import { getCurrentUser } from '../../lib/auth';
 
-// 2. Función getStaticPaths para rutas dinámicas
+// Para GitHub Pages (build estático)
 export async function getStaticPaths() {
-  // Para build estático en GitHub Pages, no pre-renderizamos rutas dinámicas
-  // Las estaciones se cargarán dinámicamente en el cliente
   return [];
 }
 
-// 3. Código de la página
 const { id } = Astro.params;
-let station = null;
 const user = getCurrentUser();
-
-// Cargar datos solo en el cliente
-if (typeof window !== 'undefined') {
-  const { getStationById } = await import('../../lib/stations');
-  station = await getStationById(id);
-  
-  if (!station) {
-    window.location.href = '/404';
-    return;
-  }
-}
-
-const isOwner = user && station?.ownerId === user.uid;
 ---
 
-
-// Código para carga dinámica en el cliente...
-
-
-// Si la estación no está pre-renderizada (ej: estación privada), cargarla dinámicamente
-if (typeof window !== 'undefined' && !station) {
-  station = await getStationById(id);
-}
-
-if (!station) {
-  return Astro.redirect('/404');
-}
-
-const isOwner = user && station.ownerId === user.uid;
-
-// Funciones para manejar interacciones (solo en cliente)
-let error = null;
-let success = null;
-
-if (typeof window !== 'undefined') {
-  const { 
-    updateStation, 
-    deleteStation, 
-    uploadStationFile, 
-    deleteStationFile 
-  } = await import('../../lib/stations');
-
-  window.handleDeleteStation = async () => {
-    if (!isOwner) return;
-    
-    if (confirm('¿Estás seguro de eliminar esta estación?')) {
-      try {
-        await deleteStation(id, user.uid);
-        window.location.href = '/';
-      } catch (err) {
-        error = err.message;
-      }
-    }
-  };
-
-  window.handleFileUpload = async (event) => {
-    if (!isOwner) return;
-    
-    const fileInput = event.target;
-    const files = fileInput.files;
-    
-    if (files.length > 0) {
-      try {
-        await uploadStationFile(id, files[0], user.uid);
-        success = 'Archivo subido correctamente';
-        error = null;
-        fileInput.value = '';
-        station = await getStationById(id);
-      } catch (err) {
-        error = err.message;
-        success = null;
-      }
-    }
-  };
-
-  window.handleDeleteFile = async (fileName) => {
-    if (!isOwner) return;
-    
-    if (confirm('¿Estás seguro de eliminar este archivo?')) {
-      try {
-        await deleteStationFile(id, fileName, user.uid);
-        success = 'Archivo eliminado correctamente';
-        error = null;
-        station = await getStationById(id);
-      } catch (err) {
-        error = err.message;
-        success = null;
-      }
-    }
-  };
-
-  window.handleToggleVisibility = async (e) => {
-    if (!isOwner) return;
-    
-    try {
-      await updateStation(id, { isPublic: e.target.checked }, user.uid);
-      success = 'Visibilidad actualizada';
-      error = null;
-      station.isPublic = e.target.checked;
-    } catch (err) {
-      error = err.message;
-      success = null;
-    }
-  };
-}
----
-
-<Layout title={`${station.name} | CelestiaCom`}>
-  <main class="station-detail">
-    <div class="station-header">
-      <h1>{station.name}</h1>
-      {isOwner && (
-        <div class="station-actions">
-          <a href={`/stations/${id}/edit`} class="btn">Editar</a>
-          <button onclick="handleDeleteStation()" class="btn danger">Eliminar</button>
-        </div>
-      )}
+<Layout title="Estación Terrena">
+  <main class="station-container">
+    <!-- Contenedor para la carga dinámica -->
+    <div id="station-content">
+      <p>Cargando información de la estación...</p>
     </div>
-    
-    <p class="station-description">{station.description}</p>
-    
-    {isOwner && (
-      <div class="visibility-toggle">
-        <label>
-          <input 
-            type="checkbox" 
-            checked={station.isPublic} 
-            onchange="handleToggleVisibility(event)"
-          />
-          <span>Estación pública (visible para todos)</span>
-        </label>
-      </div>
-    )}
-    
-    {error && <div class="alert error">{error}</div>}
-    {success && <div class="alert success">{success}</div>}
-    
-    <section class="files-section">
-      <h2>Archivos {station.files?.length ? `(${station.files.length})` : ''}</h2>
-      
-      {station.files?.length > 0 ? (
-        <div class="files-grid">
-          {station.files.map(file => (
-            <div class="file-card">
-              <a href={file.url} target="_blank" class="file-link">
-                <div class="file-icon">{getFileIcon(file.type)}</div>
-                <div class="file-info">
-                  <div class="file-name">{file.name}</div>
-                  <div class="file-meta">
-                    {formatFileSize(file.size)} • {formatDate(file.uploadedAt)}
-                  </div>
-                </div>
-              </a>
-              {isOwner && (
-                <button 
-                  onclick="handleDeleteFile('${file.name}')" 
-                  class="delete-btn"
-                  title="Eliminar archivo"
-                >
-                  🗑️
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p class="empty-files">No hay archivos en esta estación</p>
-      )}
-      
-      {isOwner && (
-        <div class="upload-area">
-          <label for="file-upload" class="upload-label">
-            <span>+ Subir archivo</span>
-            <input 
-              type="file" 
-              id="file-upload" 
-              onchange="handleFileUpload(event)"
-            />
-          </label>
-        </div>
-      )}
-    </section>
   </main>
+
+  <!-- Script que solo se ejecuta en el cliente -->
+  <script>
+    // Importaciones dinámicas
+    const { getStationById, updateStation, deleteStation, uploadStationFile, deleteStationFile } = await import('../../lib/stations');
+    const { getCurrentUser } = await import('../../lib/auth');
+    
+    // Elementos del DOM
+    const contentEl = document.getElementById('station-content');
+    const user = getCurrentUser();
+    const stationId = new URL(window.location.href).pathname.split('/').filter(Boolean).pop();
+    
+    // Cargar datos de la estación
+    async function loadStation() {
+      try {
+        const station = await getStationById(stationId);
+        
+        if (!station) {
+          window.location.href = '/404';
+          return;
+        }
+        
+        const isOwner = user && station.ownerId === user.uid;
+        
+        // Renderizar la estación
+        contentEl.innerHTML = `
+          <div class="station-header">
+            <h1>${station.name}</h1>
+            ${isOwner ? `
+              <div class="station-actions">
+                <a href="/stations/${stationId}/edit" class="btn">Editar</a>
+                <button onclick="handleDeleteStation()" class="btn danger">Eliminar</button>
+              </div>
+            ` : ''}
+          </div>
+          
+          <p class="station-description">${station.description}</p>
+          
+          ${isOwner ? `
+            <div class="visibility-toggle">
+              <label>
+                <input 
+                  type="checkbox" 
+                  ${station.isPublic ? 'checked' : ''}
+                  onchange="handleToggleVisibility(event)"
+                />
+                <span>Estación pública (visible para todos)</span>
+              </label>
+            </div>
+          ` : ''}
+          
+          <section class="files-section">
+            <h2>Archivos ${station.files?.length ? `(${station.files.length})` : ''}</h2>
+            
+            ${station.files?.length > 0 ? `
+              <div class="files-grid">
+                ${station.files.map(file => `
+                  <div class="file-card">
+                    <a href="${file.url}" target="_blank" class="file-link">
+                      <div class="file-icon">${getFileIcon(file.type)}</div>
+                      <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-meta">
+                          ${formatFileSize(file.size)} • ${new Date(file.uploadedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </a>
+                    ${isOwner ? `
+                      <button 
+                        onclick="handleDeleteFile('${file.name}')" 
+                        class="delete-btn"
+                        title="Eliminar archivo"
+                      >
+                        🗑️
+                      </button>
+                    ` : ''}
+                  </div>
+                `).join('')}
+              </div>
+            ` : `
+              <p class="empty-files">No hay archivos en esta estación</p>
+            `}
+            
+            ${isOwner ? `
+              <div class="upload-area">
+                <label for="file-upload" class="upload-label">
+                  <span>+ Subir archivo</span>
+                  <input 
+                    type="file" 
+                    id="file-upload" 
+                    onchange="handleFileUpload(event)"
+                  />
+                </label>
+              </div>
+            ` : ''}
+          </section>
+        `;
+        
+        // Funciones de manejo (solo para dueños)
+        if (isOwner) {
+          window.handleDeleteStation = async () => {
+            if (confirm('¿Estás seguro de eliminar esta estación?')) {
+              try {
+                await deleteStation(stationId, user.uid);
+                window.location.href = '/';
+              } catch (error) {
+                showError(error.message);
+              }
+            }
+          };
+          
+          window.handleFileUpload = async (event) => {
+            const fileInput = event.target;
+            if (fileInput.files.length > 0) {
+              try {
+                await uploadStationFile(stationId, fileInput.files[0], user.uid);
+                loadStation(); // Recargar
+              } catch (error) {
+                showError(error.message);
+              }
+            }
+          };
+          
+          window.handleDeleteFile = async (fileName) => {
+            if (confirm('¿Estás seguro de eliminar este archivo?')) {
+              try {
+                await deleteStationFile(stationId, fileName, user.uid);
+                loadStation(); // Recargar
+              } catch (error) {
+                showError(error.message);
+              }
+            }
+          };
+          
+          window.handleToggleVisibility = async (e) => {
+            try {
+              await updateStation(stationId, { isPublic: e.target.checked }, user.uid);
+              loadStation(); // Recargar
+            } catch (error) {
+              showError(error.message);
+            }
+          };
+        }
+      } catch (error) {
+        showError('Error al cargar la estación');
+      }
+    }
+    
+    // Funciones de utilidad
+    function getFileIcon(fileType) {
+      if (!fileType) return '📄';
+      if (fileType.includes('image')) return '🖼️';
+      if (fileType.includes('video')) return '🎬';
+      if (fileType.includes('audio')) return '🎵';
+      if (fileType.includes('pdf')) return '📕';
+      return '📄';
+    }
+    
+    function formatFileSize(bytes) {
+      if (!bytes) return '0 KB';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+    
+    function showError(message) {
+      contentEl.innerHTML += `
+        <div class="error-message">
+          ${message}
+        </div>
+      `;
+    }
+    
+    // Iniciar carga
+    loadStation();
+  </script>
 </Layout>
 
 <style>
   /* Tus estilos existentes */
+  .station-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .error-message {
+    color: red;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+  
+  /* Añade aquí el resto de tus estilos */
 </style>
-
-<script>
-  // Funciones de utilidad para el cliente
-  function getFileIcon(fileType) {
-    if (!fileType) return '📄';
-    if (fileType.includes('image')) return '🖼️';
-    if (fileType.includes('video')) return '🎬';
-    if (fileType.includes('audio')) return '🎵';
-    if (fileType.includes('pdf')) return '📕';
-    return '📄';
-  }
-
-  function formatFileSize(bytes) {
-    if (!bytes) return '0 KB';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
-
-  function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString();
-  }
-</script>
