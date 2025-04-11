@@ -1,0 +1,27 @@
+---
+import { checkAuth } from '../../lib/auth';
+
+if (!checkAuth()) {
+  window.location.href = '/auth/login';
+}
+
+---
+import { saveUserStation } from '../../lib/stations';
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+  const station = {
+    name: e.target.name.value,
+    description: e.target.description.value,
+    files: []
+  };
+  saveUserStation(station);
+  window.location.href = '/';
+};
+---
+
+<form on:submit={handleSubmit}>
+  <input type="text" name="name" placeholder="Nombre" required>
+  <textarea name="description"></textarea>
+  <button type="submit">Guardar</button>
+</form>

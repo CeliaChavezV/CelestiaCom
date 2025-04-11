@@ -70,3 +70,32 @@ const posts = await getCollection('blog');
 		}
 	}
 </style>
+
+
+---
+import { getPublicStations, getUserStations } from '../lib/stations';
+import { getCurrentUser } from '../lib/auth';
+
+const publicStations = await getPublicStations();
+const user = getCurrentUser();
+const userStations = user ? getUserStations() : [];
+---
+
+<main>
+  <!-- Estaciones públicas -->
+  <h2>Estaciones Terrestres</h2>
+  {publicStations.map(station => (
+    <a href={`/stations/${station.id}`}>{station.name}</a>
+  ))}
+
+  <!-- Estaciones del usuario (solo si logueado) -->
+  {user && (
+    <>
+      <h2>Mis Estaciones</h2>
+      {userStations.map(station => (
+        <a href={`/stations/${station.id}`}>{station.name}</a>
+      ))}
+      <a href="/stations/new">+ Nueva Estación</a>
+    </>
+  )}
+</main>
