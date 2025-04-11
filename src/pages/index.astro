@@ -1,13 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { getPublicStations, getUserStations } from '../lib/stations';
-import { getCurrentUser } from '../lib/auth';
 
+// Solo contenido estático durante el build
 const posts = await getCollection('blog');
-const user = getCurrentUser();
-const publicStations = await getPublicStations();
-const userStations = user ? await getUserStations(user.uid) : [];
 ---
 
 <Layout title="CelestiaCom - Inicio">
@@ -26,92 +22,170 @@ const userStations = user ? await getUserStations(user.uid) : [];
       </div>
     </section>
 
-    <section class="stations-section">
-      <h1>Estaciones Terrestres</h1>
-      
-      <div class="stations-grid">
-        {publicStations.map(station => (
-          <a href={`/stations/${station.id}`} class="station-card">
-            <h3>{station.name}</h3>
-            <p>{station.description}</p>
-          </a>
-        ))}
-      </div>
-
-      {user && (
-        <>
-          <h2>Mis Estaciones</h2>
-          <div class="stations-grid">
-            {userStations.map(station => (
-              <a href={`/stations/${station.id}`} class="station-card owner">
-                <h3>{station.name}</h3>
-                <p>{station.description}</p>
-                <span class="badge">Tu estación</span>
-              </a>
-            ))}
-          </div>
-          <a href="/stations/new" class="button primary">+ Nueva Estación</a>
-        </>
-      )}
-    </section>
+    <div id="stations-app">
+      <!-- Las estaciones se cargarán aquí dinámicamente -->
+      <div class="loading-message">Cargando estaciones...</div>
+    </div>
   </main>
-</Layout>
 
-<style>
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-  
-  .blog-grid, .stations-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
-  }
-  
-  .card, .station-card {
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .station-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-  }
-  
-  .station-card.owner {
-    border-left: 4px solid var(--accent-color);
-  }
-  
-  .badge {
-    display: inline-block;
-    background: var(--accent-color);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    margin-top: 0.5rem;
-  }
-  
-  .button {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background 0.3s ease;
-  }
-  
-  .primary {
-    background: var(--accent-color);
-    color: white;
-  }
-  
-  .primary:hover {
-    background: var(--accent-dark);
-  }
-</style>
+  <!-- Script para carga dinámica en el cliente -->
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Cargar Firebase y funciones necesarias
+        const { initializeApp } = await import('firebase/app');
+        const { getFirestore, collection, query, where, getDocs } = await import('firebase/firestore');
+        const { getAuth } = await import('firebase/auth');
+        
+        // Configuración de Firebase
+        const firebaseConfig = {
+          apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
+          authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
+          projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
+          storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
+          messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+          appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Obtener estaciones públicas
+        const publicStationsQuery = query(
+          collection(db, 'stations'), 
+          where('isPublic', '==', true)
+        );
+        const publicSnapshot = await getDocs(publicStationsQuery);
+        const publicStations = publicSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        // Obtener estaciones del usuario si está autenticado
+        let userStations = [];
+        const user = auth.currentUser;
+        
+        if (user) {
+          const userStationsQuery = query(
+            collection(db, 'stations'),
+            where('ownerId', '==', user.uid)
+          );
+          const userSnapshot = await getDocs(userStationsQuery);
+          userStations = userSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+        }
+
+        // Renderizar las estaciones
+        const appContainer = document.getElementById('stations-app');
+        appContainer.innerHTML = `
+          <section class="stations-section">
+            <h1>Estaciones Terrestres</h1>
+            
+            <div class="stations-grid">
+              ${publicStations.map(station => `
+                <a href="/stations/${station.id}" class="station-card">
+                  <h3>${station.name}</h3>
+                  <p>${station.description}</p>
+                </a>
+              `).join('')}
+            </div>
+
+            ${user ? `
+              <h2>Mis Estaciones</h2>
+              <div class="stations-grid">
+                ${userStations.map(station => `
+                  <a href="/stations/${station.id}" class="station-card owner">
+                    <h3>${station.name}</h3>
+                    <p>${station.description}</p>
+                    <span class="badge">Tu estación</span>
+                  </a>
+                `).join('')}
+              </div>
+              <a href="/stations/new" class="button primary">+ Nueva Estación</a>
+            ` : ''}
+          </section>
+        `;
+      } catch (error) {
+        console.error('Error loading stations:', error);
+        document.getElementById('stations-app').innerHTML = `
+          <div class="error-message">
+            Error al cargar las estaciones. Por favor recarga la página.
+          </div>
+        `;
+      }
+    });
+  </script>
+
+  <style>
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .blog-grid, .stations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .card, .station-card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .station-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .station-card.owner {
+      border-left: 4px solid var(--accent-color);
+    }
+    
+    .badge {
+      display: inline-block;
+      background: var(--accent-color);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    
+    .button {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.3s ease;
+    }
+    
+    .primary {
+      background: var(--accent-color);
+      color: white;
+    }
+    
+    .primary:hover {
+      background: var(--accent-dark);
+    }
+    
+    .loading-message, .error-message {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+    }
+    
+    .error-message {
+      color: var(--error-color);
+    }
+  </style>
+</Layout>

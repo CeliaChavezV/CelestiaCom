@@ -1,4 +1,4 @@
-import { db, storage } from './firebase';
+import { db } from './firebase';
 import { 
   collection, 
   doc, 
@@ -12,28 +12,32 @@ import {
   arrayUnion,
   arrayRemove
 } from 'firebase/firestore';
-import { 
-  ref, 
-  uploadBytes, 
-  getDownloadURL,
-  deleteObject
-} from 'firebase/storage';
 
-// Función para obtener estaciones públicas
+// Obtener estaciones públicas
 export async function getPublicStations() {
-  try {
-    const stationsCollection = collection(db, 'stations');
-    const q = query(stationsCollection, where('isPublic', '==', true));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ 
-      id: doc.id, 
-      ...doc.data() 
-    }));
-  } catch (error) {
-    console.error("Error getting public stations:", error);
-    return [];
-  }
+  const stationsRef = collection(db, 'stations');
+  const q = query(stationsRef, where('isPublic', '==', true));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({ 
+    id: doc.id, 
+    ...doc.data() 
+  }));
 }
+
+// Obtener estaciones de un usuario específico
+export async function getUserStations(userId) {
+  if (!userId) return [];
+  
+  const stationsRef = collection(db, 'stations');
+  const q = query(stationsRef, where('ownerId', '==', userId));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({ 
+    id: doc.id, 
+    ...doc.data() 
+  }));
+}
+
+// ... (mantén las otras funciones que ya tengas)
 
 // Obtener estación por ID
 export async function getStationById(id) {
