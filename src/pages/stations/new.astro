@@ -1,11 +1,5 @@
 ---
-import { checkAuth } from '../../lib/auth';
-
-if (!checkAuth()) {
-  window.location.href = '/auth/login';
-}
-
----
+// src/pages/stations/new.astro
 import { saveUserStation } from '../../lib/stations';
 
 const handleSubmit = (e) => {
