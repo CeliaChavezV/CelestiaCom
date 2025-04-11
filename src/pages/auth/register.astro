@@ -2,15 +2,14 @@
 import { register } from '../../lib/auth';
 
 let error = '';
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
-  const formData = new FormData(e.target);
-  const email = formData.get('email');
-  const password = formData.get('password');
+  const email = e.target.email.value;
+  const password = e.target.password.value;
 
   try {
-    register(email, password);
-    window.location.href = '/';
+    await register(email, password);
+    window.location.href = '/CelestiaCom/';
   } catch (err) {
     error = err.message;
   }

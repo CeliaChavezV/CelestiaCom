@@ -1,20 +1,20 @@
 ---
-// src/pages/auth/login.astro
 import { login } from '../../lib/auth';
 
 let error = '';
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
   const email = e.target.email.value;
   const password = e.target.password.value;
 
-  if (login(email, password)) {
-    // Redirige a la página principal después del login
-    window.location.href = '/';
-  } else {
-    error = 'Credenciales incorrectas';
+  try {
+    await login(email, password);
+    window.location.href = '/CelestiaCom/';
+  } catch (err) {
+    error = err.message;
   }
 };
+
 ---
 
 <!DOCTYPE html>
