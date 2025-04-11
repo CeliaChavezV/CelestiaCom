@@ -1,36 +1,19 @@
 ---
-// Importa tus funciones para obtener datos
 import { getPublicStations, getUserStations } from '../../lib/stations';
 
-// Genera las rutas estáticas
+// Datos combinados (estáticos + usuario)
+const publicStations = getPublicStations();
+const userStations = getUserStations();
+const allStations = [...publicStations, ...userStations];
+
 export async function getStaticPaths() {
-  const publicStations = await getPublicStations();
-  const userStations = getUserStations(); // Si usas localStorage, esto debe ser sincrónico
-  
-  // Combina todas las estaciones
-  const allStations = [...publicStations, ...userStations];
-  
   return allStations.map(station => ({
     params: { id: station.id },
-    props: { station } // Pasa los datos de la estación como props
+    props: { station }
   }));
 }
 
-// Props recibidas de getStaticPaths
 const { station } = Astro.props;
 ---
 
 <!-- Tu contenido existente -->
-<div class="station-detail">
-  <h1>{station.name}</h1>
-  <p>{station.description}</p>
-  
-  <h2>Archivos disponibles:</h2>
-  <ul>
-    {station.files.map(file => (
-      <li>
-        <a href={`/uploads/${file}`} target="_blank">{file}</a>
-      </li>
-    ))}
-  </ul>
-</div>

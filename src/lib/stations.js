@@ -1,22 +1,12 @@
-// Estaciones públicas iniciales
-export async function getPublicStations() {
-    const response = await fetch('/data/stations.json');
-    return (await response.json()).filter(s => s.public);
-  }
-  
-  // Estaciones del usuario (guardadas en localStorage)
+// Importa directamente en lugar de usar fetch
+import stationsData from '../data/stations.json';
+
+export function getPublicStations() {
+  return stationsData.filter(s => s.public);
+}
+
 export function getUserStations() {
-    // Solo para build, devuelve un array vacío
-    if (typeof window === 'undefined') return [];
-    return JSON.parse(localStorage.getItem('userStations')) || [];
-  }
-  
-  export function saveUserStation(station) {
-    const stations = getUserStations();
-    stations.push({ 
-      ...station, 
-      id: 'user-' + Date.now(),
-      creator: localStorage.getItem('currentUser')
-    });
-    localStorage.setItem('userStations', JSON.stringify(stations));
-  }
+  // Para build devuelve array vacío, en runtime usa localStorage
+  if (typeof window === 'undefined') return [];
+  return JSON.parse(localStorage.getItem('userStations')) || [];
+}
