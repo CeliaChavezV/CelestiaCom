@@ -1,22 +1,37 @@
 ---
+// 1. Importaciones
 import Layout from '../../layouts/Layout.astro';
-import { getStationById, getPublicStations } from '../../lib/stations';
 import { getCurrentUser } from '../../lib/auth';
 
+// 2. Función getStaticPaths para rutas dinámicas
 export async function getStaticPaths() {
-  // Obtener solo estaciones públicas para pre-renderizar
-  const publicStations = await getPublicStations();
-  
-  return publicStations.map(station => ({
-    params: { id: station.id },
-    props: { preloadedStation: station }
-  }));
+  // Para build estático en GitHub Pages, no pre-renderizamos rutas dinámicas
+  // Las estaciones se cargarán dinámicamente en el cliente
+  return [];
 }
 
+// 3. Código de la página
 const { id } = Astro.params;
-const { preloadedStation } = Astro.props;
-let station = preloadedStation;
+let station = null;
 const user = getCurrentUser();
+
+// Cargar datos solo en el cliente
+if (typeof window !== 'undefined') {
+  const { getStationById } = await import('../../lib/stations');
+  station = await getStationById(id);
+  
+  if (!station) {
+    window.location.href = '/404';
+    return;
+  }
+}
+
+const isOwner = user && station?.ownerId === user.uid;
+---
+
+
+// Código para carga dinámica en el cliente...
+
 
 // Si la estación no está pre-renderizada (ej: estación privada), cargarla dinámicamente
 if (typeof window !== 'undefined' && !station) {

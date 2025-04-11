@@ -16,31 +16,37 @@ import {
   ref, 
   uploadBytes, 
   getDownloadURL,
-  deleteObject,
-  listAll
+  deleteObject
 } from 'firebase/storage';
 
-// Obtener todas las estaciones públicas
+// Función para obtener estaciones públicas
 export async function getPublicStations() {
-    const q = query(collection(db, 'stations'), where('isPublic', '==', true));
+  try {
+    const stationsCollection = collection(db, 'stations');
+    const q = query(stationsCollection, where('isPublic', '==', true));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return querySnapshot.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data() 
+    }));
+  } catch (error) {
+    console.error("Error getting public stations:", error);
+    return [];
   }
-
-// Obtener estaciones de un usuario específico
-export async function getUserStations(userId) {
-  if (!userId) return [];
-  const q = query(collection(db, 'stations'), where('ownerId', '==', userId));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 // Obtener estación por ID
 export async function getStationById(stationId) {
-  const docRef = doc(db, 'stations', stationId);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
+  try {
+    const docRef = doc(db, 'stations', stationId);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
+  } catch (error) {
+    console.error("Error getting station:", error);
+    return null;
+  }
 }
+
 
 // Crear nueva estación
 export async function createStation(stationData, userId) {
