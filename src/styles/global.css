@@ -1,0 +1,38 @@
+:root {
+    --primary-color: #0a192f;
+    --secondary-color: #172a45;
+    --accent-color: #64ffda;
+    --accent-dark: #52d1b2;
+    --text-primary: #e6f1ff;
+    --text-secondary: #8892b0;
+    --border-color: #2a3a5a;
+    --card-bg: #112240;
+    --error-color: #ff6b6b;
+    --error-dark: #e05555;
+    --error-bg: rgba(255, 107, 107, 0.1);
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    background-color: var(--primary-color);
+    color: var(--text-primary);
+    font-family: 'Calibre', 'Inter', 'San Francisco', 'SF Pro Text', -apple-system, system-ui, sans-serif;
+    line-height: 1.6;
+  }
+  
+  a {
+    color: var(--accent-color);
+    text-decoration: none;
+  }
+  
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }

@@ -1,40 +1,190 @@
 ---
-import { getPublicStations, getUserStations } from '../../lib/stations';
+import Layout from '../../layouts/Layout.astro';
+import { getStationById } from '../../lib/stations';
+import { getCurrentUser } from '../../lib/auth';
+import { uploadStationFile, deleteStationFile } from '../../lib/stations';
 
-export async function getStaticPaths() {
-  // Obtener estaciones públicas (del JSON)
-  const publicStations = getPublicStations();
-  
-  // Obtener estaciones de usuario (array vacío durante el build)
-  const userStations = getUserStations();
-  
-  // Combinar ambas listas
-  const allStations = [...publicStations, ...userStations];
-  
-  return allStations.map(station => ({
-    params: { id: station.id },
-    props: { station }
-  }));
+const { id } = Astro.params;
+const station = await getStationById(id);
+const user = getCurrentUser();
+const isOwner = user && station?.owner === user.uid;
+
+if (!station) {
+  return Astro.redirect('/404');
 }
 
-// Props recibidas de getStaticPaths
-const { station } = Astro.props;
+const handleFileUpload = async (event) => {
+  if (!isOwner) return;
+  
+  const fileInput = event.target;
+  const files = fileInput.files;
+  
+  if (files.length > 0) {
+    try {
+      const uploadedFile = await uploadStationFile(id, files[0], user.uid);
+      // Aquí deberías actualizar la lista de archivos en Firestore
+      window.location.reload();
+    } catch (error) {
+      alert('Error al subir archivo: ' + error.message);
+    }
+  }
+};
+
+const handleDeleteFile = async (fileName) => {
+  if (!isOwner) return;
+  
+  if (confirm('¿Estás seguro de eliminar este archivo?')) {
+    try {
+      await deleteStationFile(id, fileName, user.uid);
+      // Aquí deberías actualizar la lista de archivos en Firestore
+      window.location.reload();
+    } catch (error) {
+      alert('Error al eliminar archivo: ' + error.message);
+    }
+  }
+};
 ---
 
-<div class="station-detail">
-  <h1>{station.name}</h1>
-  <p>{station.description}</p>
+<Layout title={`${station.name} | CelestiaCom`}>
+  <main class="station-detail">
+    <h1>{station.name}</h1>
+    <p class="description">{station.description}</p>
+    
+    {station.files?.length > 0 && (
+      <section class="files-section">
+        <h2>Archivos</h2>
+        <div class="files-grid">
+          {station.files.map(file => (
+            <div class="file-card">
+              <a href={file.url} target="_blank" class="file-link">
+                <span class="file-icon">{getFileIcon(file.type)}</span>
+                <span class="file-name">{file.name}</span>
+              </a>
+              {isOwner && (
+                <button 
+                  on:click={() => handleDeleteFile(file.name)} 
+                  class="delete-button"
+                >
+                  Eliminar
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+    
+    {isOwner && (
+      <section class="upload-section">
+        <h2>Subir nuevo archivo</h2>
+        <input 
+          type="file" 
+          id="file-upload" 
+          on:change={handleFileUpload}
+        />
+        <label for="file-upload" class="upload-button">
+          Seleccionar archivo
+        </label>
+      </section>
+    )}
+  </main>
+</Layout>
+
+<style>
+  .station-detail {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
   
-  {station.files && station.files.length > 0 && (
-    <>
-      <h2>Archivos disponibles:</h2>
-      <ul>
-        {station.files.map(file => (
-          <li>
-            <a href={`/uploads/${file}`} target="_blank">{file}</a>
-          </li>
-        ))}
-      </ul>
-    </>
-  )}
-</div>
+  .description {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+  }
+  
+  .files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  
+  .file-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .file-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 0.5rem;
+  }
+  
+  .file-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .file-name {
+    text-align: center;
+    word-break: break-word;
+  }
+  
+  .delete-button {
+    background: var(--error-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .delete-button:hover {
+    background: var(--error-dark);
+  }
+  
+  .upload-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  #file-upload {
+    display: none;
+  }
+  
+  .upload-button {
+    display: inline-block;
+    background: var(--accent-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .upload-button:hover {
+    background: var(--accent-dark);
+  }
+</style>
+
+<script>
+  function getFileIcon(fileType) {
+    if (!fileType) return '📄';
+    
+    if (fileType.includes('image')) return '🖼️';
+    if (fileType.includes('video')) return '🎬';
+    if (fileType.includes('audio')) return '🎵';
+    if (fileType.includes('pdf')) return '📕';
+    
+    return '📄';
+  }
+</script>

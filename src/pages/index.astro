@@ -1,42 +1,34 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import BlogCard from '../components/BlogCard.astro';
 import { getCollection } from 'astro:content';
 import { getPublicStations, getUserStations } from '../lib/stations';
 import { getCurrentUser } from '../lib/auth';
 
-// Obtener posts del blog
 const posts = await getCollection('blog');
-
-// Obtener estaciones
-const publicStations = getPublicStations();
-const user = typeof window !== 'undefined' ? getCurrentUser() : null;
-const userStations = user ? getUserStations() : [];
+const user = getCurrentUser();
+const publicStations = await getPublicStations();
+const userStations = user ? await getUserStations(user.uid) : [];
 ---
 
-<Layout title="CelestiaCom">
-  <main>
-    <!-- Sección del Blog -->
+<Layout title="CelestiaCom - Inicio">
+  <main class="container">
     <section class="blog-section">
       <h1>Últimas Publicaciones</h1>
       <div class="blog-grid">
         {posts.map(post => (
           <a href={`/${post.slug}`} class="card-link">
-            <BlogCard
-              title={post.data.title}
-              description={post.data.description}
-              image={post.data.image}
-            />
+            <article class="card">
+              <h3>{post.data.title}</h3>
+              <p>{post.data.description}</p>
+            </article>
           </a>
         ))}
       </div>
     </section>
 
-    <!-- Sección de Estaciones -->
     <section class="stations-section">
       <h1>Estaciones Terrestres</h1>
       
-      <!-- Estaciones públicas -->
       <div class="stations-grid">
         {publicStations.map(station => (
           <a href={`/stations/${station.id}`} class="station-card">
@@ -46,19 +38,19 @@ const userStations = user ? getUserStations() : [];
         ))}
       </div>
 
-      <!-- Estaciones del usuario -->
       {user && (
         <>
           <h2>Mis Estaciones</h2>
           <div class="stations-grid">
             {userStations.map(station => (
-              <a href={`/stations/${station.id}`} class="station-card">
+              <a href={`/stations/${station.id}`} class="station-card owner">
                 <h3>{station.name}</h3>
                 <p>{station.description}</p>
+                <span class="badge">Tu estación</span>
               </a>
             ))}
           </div>
-          <a href="/stations/new" class="new-station-btn">+ Nueva Estación</a>
+          <a href="/stations/new" class="button primary">+ Nueva Estación</a>
         </>
       )}
     </section>
@@ -66,88 +58,60 @@ const userStations = user ? getUserStations() : [];
 </Layout>
 
 <style>
-  :root {
-    --azul-oscuro: #0a192f;
-    --azul-medio: #172a45;
-    --texto-claro: #e6f1ff;
-    --destacado: #64ffda;
-  }
-  
-  main {
-    padding: 2rem;
-    max-width: 1400px;
+  .container {
+    max-width: 1200px;
     margin: 0 auto;
-    background-color: var(--azul-oscuro);
-    color: var(--texto-claro);
+    padding: 2rem;
   }
   
-  section {
-    margin-bottom: 3rem;
-  }
-  
-  h1, h2 {
-    color: var(--destacado);
-    margin-bottom: 1.5rem;
-  }
-  
-  /* Estilos del Blog */
-  .blog-grid {
+  .blog-grid, .stations-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
-  }
-  
-  .card-link {
-    text-decoration: none;
-    transition: transform 0.3s ease;
-  }
-  
-  .card-link:hover {
-    transform: translateY(-5px);
-  }
-  
-  /* Estilos de Estaciones */
-  .stations-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1.5rem;
+    margin: 2rem 0;
   }
   
-  .station-card {
-    background: var(--azul-medio);
-    padding: 1.5rem;
+  .card, .station-card {
+    background: var(--card-bg);
     border-radius: 8px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    color: inherit;
-    border: 1px solid rgba(100, 255, 218, 0.1);
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   
   .station-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--destacado);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
   }
   
-  .new-station-btn {
+  .station-card.owner {
+    border-left: 4px solid var(--accent-color);
+  }
+  
+  .badge {
     display: inline-block;
-    margin-top: 1rem;
-    padding: 0.8rem 1.5rem;
-    background: transparent;
-    color: var(--destacado);
-    border: 1px solid var(--destacado);
+    background: var(--accent-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+  
+  .button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
     border-radius: 4px;
     text-decoration: none;
-    transition: all 0.3s ease;
+    font-weight: 500;
+    transition: background 0.3s ease;
   }
   
-  .new-station-btn:hover {
-    background: rgba(100, 255, 218, 0.1);
+  .primary {
+    background: var(--accent-color);
+    color: white;
   }
   
-  @media (max-width: 768px) {
-    .blog-grid, .stations-grid {
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    }
+  .primary:hover {
+    background: var(--accent-dark);
   }
 </style>

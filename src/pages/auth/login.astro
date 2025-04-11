@@ -1,82 +1,145 @@
 ---
-import { login } from '../../lib/auth';
+import Layout from '../../layouts/Layout.astro';
+import { login, getCurrentUser } from '../../lib/auth';
 
-let error = '';
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  const email = e.target.email.value;
-  const password = e.target.password.value;
+const user = getCurrentUser();
+if (user) {
+  return Astro.redirect('/');
+}
 
-  try {
-    await login(email, password);
-    window.location.href = '/CelestiaCom/';
-  } catch (err) {
-    error = err.message;
+let error = null;
+
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  const form = event.target;
+  const email = form.email.value;
+  const password = form.password.value;
+  
+  const result = await login(email, password);
+  
+  if (result.success) {
+    window.location.href = '/';
+  } else {
+    error = result.error;
   }
 };
-
 ---
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iniciar Sesión | CelestiaCom</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .error {
-      color: red;
-      margin-top: 10px;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    input {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <h1>Iniciar Sesión</h1>
+<Layout title="Iniciar Sesión | CelestiaCom">
+  <main class="auth-page">
+    <div class="auth-container">
+      <h1>Iniciar Sesión</h1>
+      
+      {error && <div class="error-message">{error}</div>}
+      
+      <form on:submit={handleSubmit} class="auth-form">
+        <div class="form-group">
+          <label for="email">Correo Electrónico</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            required
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            required
+          />
+        </div>
+        
+        <button type="submit" class="submit-button">Ingresar</button>
+      </form>
+      
+      <p class="auth-link">
+        ¿No tienes cuenta? <a href="/auth/register">Regístrate aquí</a>
+      </p>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .auth-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 2rem;
+  }
   
-  <form on:submit={handleSubmit}>
-    <input 
-      type="email" 
-      name="email" 
-      placeholder="Correo electrónico" 
-      required
-    >
-    
-    <input 
-      type="password" 
-      name="password" 
-      placeholder="Contraseña" 
-      required
-    >
-    
-    <button type="submit">Ingresar</button>
-  </form>
-
-  {error && <p class="error">{error}</p>}
-
-  <p>¿No tienes cuenta? <a href="/auth/register">Regístrate aquí</a></p>
-</body>
-</html>
+  .auth-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+  
+  .auth-form {
+    margin-top: 2rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+  }
+  
+  .submit-button {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .submit-button:hover {
+    background: var(--accent-dark);
+  }
+  
+  .error-message {
+    background: var(--error-bg);
+    color: var(--error-color);
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .auth-link {
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+  
+  .auth-link a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .auth-link a:hover {
+    text-decoration: underline;
+  }
+</style>
