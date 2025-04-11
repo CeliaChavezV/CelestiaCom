@@ -13,15 +13,24 @@ import {
   arrayRemove
 } from 'firebase/firestore';
 import { 
-    ref, 
-    uploadBytes, 
-    getDownloadURL,
-    deleteObject
-  } from 'firebase/storage';
+  ref, 
+  uploadBytes, 
+  getDownloadURL,
+  deleteObject,
+  listAll
+} from 'firebase/storage';
 
 // Obtener todas las estaciones públicas
 export async function getPublicStations() {
   const q = query(collection(db, 'stations'), where('isPublic', '==', true));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+// Obtener estaciones de un usuario específico
+export async function getUserStations(userId) {
+  if (!userId) return [];
+  const q = query(collection(db, 'stations'), where('ownerId', '==', userId));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }

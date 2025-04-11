@@ -4,12 +4,11 @@ import { astroImageTools } from "astro-imagetools";
 export default defineConfig({
   site: 'https://celiachavezv.github.io',
   base: '/CelestiaCom',
-  output: 'static', // Asegúrate de que es 'static' para GitHub Pages
   trailingSlash: 'always',
   integrations: [astroImageTools],
   vite: {
     ssr: {
-      noExternal: ['firebase', 'firebase/app', 'firebase/auth']
+      noExternal: ['firebase']
     },
     define: {
       'import.meta.env.PUBLIC_FIREBASE_API_KEY': JSON.stringify(process.env.PUBLIC_FIREBASE_API_KEY),
