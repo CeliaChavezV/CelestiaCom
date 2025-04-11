@@ -1,19 +1,40 @@
 ---
 import { getPublicStations, getUserStations } from '../../lib/stations';
 
-// Datos combinados (estáticos + usuario)
-const publicStations = getPublicStations();
-const userStations = getUserStations();
-const allStations = [...publicStations, ...userStations];
-
 export async function getStaticPaths() {
+  // Obtener estaciones públicas (del JSON)
+  const publicStations = getPublicStations();
+  
+  // Obtener estaciones de usuario (array vacío durante el build)
+  const userStations = getUserStations();
+  
+  // Combinar ambas listas
+  const allStations = [...publicStations, ...userStations];
+  
   return allStations.map(station => ({
     params: { id: station.id },
     props: { station }
   }));
 }
 
+// Props recibidas de getStaticPaths
 const { station } = Astro.props;
 ---
 
-<!-- Tu contenido existente -->
+<div class="station-detail">
+  <h1>{station.name}</h1>
+  <p>{station.description}</p>
+  
+  {station.files && station.files.length > 0 && (
+    <>
+      <h2>Archivos disponibles:</h2>
+      <ul>
+        {station.files.map(file => (
+          <li>
+            <a href={`/uploads/${file}`} target="_blank">{file}</a>
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
+</div>
