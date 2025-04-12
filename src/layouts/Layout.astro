@@ -70,6 +70,7 @@ const pages = await getCollection('page');
       font-weight: 600;
       font-size: 1.1rem;
       transition: all 0.3s ease;
+      cursor: pointer;
     }
 
     .logo:hover {
@@ -135,7 +136,7 @@ const pages = await getCollection('page');
   <header>
     <nav>
       <div class="nav-left">
-        <a href="javascript:location.href=location.href" class="logo">
+        <a href="/" class="logo" id="main-logo">
           <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
             <circle cx="20" cy="20" r="19" stroke="currentColor" stroke-width="2"/>
             <path d="M12 20C12 25 16 28 20 28C24 28 28 25 28 20C28 15 24 12 20 12" stroke="currentColor" stroke-width="2"/>
@@ -143,6 +144,7 @@ const pages = await getCollection('page');
           CelestiaCom
         </a>
       </div>
+
       <div class="nav-right">
         <a href="/login" class="auth-button login-button">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -172,5 +174,21 @@ const pages = await getCollection('page');
   <footer>
     <p>&copy; {new Date().getFullYear()} CelestiaCom. <a href="https://github.com/CeliaChavezV">Celia</a></p>
   </footer>
+
+  <script is:inline>
+    // Manejar clic en el logo
+    document.getElementById('main-logo').addEventListener('click', function(e) {
+      e.preventDefault();
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
+    });
+
+    // Manejar logout
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+      localStorage.removeItem('celestia_currentUser');
+      window.location.href = '/';
+    });
+  </script>
 </body>
 </html>
