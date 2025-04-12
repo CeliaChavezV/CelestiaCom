@@ -69,6 +69,11 @@ if (isBrowser && !isAuthenticated) {
     document.getElementById('current-estacion').textContent = user.estacion;
   }
 
+  // Verificar autenticación al cargar
+  if (!user) {
+    window.location.href = '/CelestiaCom/login/';  // Cambiado
+  }
+
   // Actualizar estación
   document.getElementById('update-estacion-btn').addEventListener('click', () => {
     const newName = document.getElementById('new-estacion-name').value.trim();

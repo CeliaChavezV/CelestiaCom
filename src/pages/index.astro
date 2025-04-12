@@ -50,6 +50,10 @@ const posts = await getCollection('blog');
       grid-template-columns: repeat(2, 1fr);
     }
   }
+
+  // Si hay algún script de redirección, actualízalo:
+if (userLoggedIn) {
+  window.location.href = '/CelestiaCom/dashboard/';  // Ejemplo
   
   @media (max-width: 600px) {
     .blog-grid {

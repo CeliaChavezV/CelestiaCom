@@ -200,18 +200,19 @@ const isLoggedIn = isBrowser ? !!localStorage.getItem('celestia_currentUser') : 
     <p>&copy; {new Date().getFullYear()} CelestiaCom. <a href="https://github.com/CeliaChavezV">Celia</a></p>
   </footer>
 
-  <script>
-    // Manejar logout
-    document.getElementById('logout-btn')?.addEventListener('click', () => {
-      localStorage.removeItem('celestia_currentUser');
-      window.location.href = '/';
-    });
+<script>
+  // Manejar logout
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+    localStorage.removeItem('celestia_currentUser');
+    window.location.href = '/CelestiaCom/';  // Cambiado
+  });
 
-    // Redirigir si ya está autenticado
-    if (localStorage.getItem('celestia_currentUser') && 
-        (window.location.pathname === '/login' || window.location.pathname === '/register')) {
-      window.location.href = '/dashboard';
-    }
-  </script>
+  // Redirigir si ya está autenticado
+  if (localStorage.getItem('celestia_currentUser') && 
+      (window.location.pathname === '/CelestiaCom/login' || 
+       window.location.pathname === '/CelestiaCom/register')) {
+    window.location.href = '/CelestiaCom/dashboard/';  // Cambiado
+  }
+</script>
 </body>
 </html>

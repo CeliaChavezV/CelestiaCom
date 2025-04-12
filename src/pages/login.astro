@@ -128,12 +128,12 @@ if (isBrowser && isLoggedIn) {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
-    const users = JSON.parse(localStorage.getItem('celestia_users'));
+    const users = JSON.parse(localStorage.getItem('celestia_users') || []);
     const user = users.find(u => u.email === email && u.password === password);
 
     if (user) {
       localStorage.setItem('celestia_currentUser', JSON.stringify(user));
-      window.location.href = '/dashboard';
+      window.location.href = '/CelestiaCom/dashboard/';  // Cambiado
     } else {
       alert('❌ Email o contraseña incorrectos');
     }
