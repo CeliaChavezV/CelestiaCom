@@ -23,50 +23,37 @@ const posts = await getCollection('blog');
 </Layout>
 
 <style>
-	:root {
-		--azul-oscuro: #0a192f;
-		--azul-medio: #172a45;
-		--texto-claro: #e6f1ff;
-		--destacado: #64ffda; /* Color de acento para hover */
-	}
-	
-	main {
-		padding: 2rem;
-		max-width: 1400px;
-		margin: 0 auto;
-		background-color: var(--azul-oscuro);
-	}
-	
-	.blog-grid {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 2rem;
-	}
-	
-	.card-link {
-		text-decoration: none;
-		transition: transform 0.3s ease;
-	}
-	
-	.card-link:hover {
-		transform: translateY(-5px);
-	}
-	
-	@media (max-width: 1200px) {
-		.blog-grid {
-			grid-template-columns: repeat(3, 1fr);
-		}
-	}
-	
-	@media (max-width: 900px) {
-		.blog-grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
-	}
-	
-	@media (max-width: 600px) {
-		.blog-grid {
-			grid-template-columns: 1fr;
-		}
-	}
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  
+  .card-link {
+    text-decoration: none;
+    transition: transform 0.3s ease;
+  }
+  
+  .card-link:hover {
+    transform: translateY(-5px);
+  }
+  
+  @media (max-width: 1200px) {
+    .blog-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  @media (max-width: 900px) {
+    .blog-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .blog-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>

@@ -1,0 +1,90 @@
+---
+// Este componente se renderiza solo en el cliente
+const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('celestia_currentUser');
+---
+
+<div id="auth-forms" class:list={[isLoggedIn ? 'hidden' : '']}>
+  <!-- Login -->
+  <div class="auth-section">
+    <h3>Login</h3>
+    <input type="email" id="login-email" placeholder="Email" class="auth-input">
+    <input type="password" id="login-password" placeholder="Contraseña" class="auth-input">
+    <button id="login-btn" class="auth-button login-btn">Ingresar</button>
+  </div>
+
+  <!-- Registro -->
+  <div class="auth-section">
+    <h3>Registrar Estación</h3>
+    <input type="email" id="registro-email" placeholder="Email" class="auth-input">
+    <input type="password" id="registro-password" placeholder="Contraseña" class="auth-input">
+    <input type="text" id="registro-estacion" placeholder="Nombre de Estación" class="auth-input">
+    <button id="registrar-btn" class="auth-button register-btn">Registrar</button>
+  </div>
+</div>
+
+<style>
+  #auth-forms {
+    max-width: 400px;
+    margin: 0 auto 2rem;
+    padding: 1.5rem;
+    background: var(--azul-medio);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .auth-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-section h3 {
+    color: var(--texto-claro);
+    margin-bottom: 0.5rem;
+  }
+
+  .auth-input {
+    width: 100%;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    background: var(--azul-oscuro);
+    border: 1px solid var(--texto-claro);
+    color: var(--texto-claro);
+    border-radius: 4px;
+  }
+
+  .auth-button {
+    width: 100%;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+  }
+
+  .login-btn {
+    background: var(--destacado);
+    color: var(--azul-oscuro);
+  }
+
+  .register-btn {
+    background: #2196F3;
+    color: white;
+    margin-top: 0.5rem;
+  }
+
+  .auth-button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  .hidden {
+    display: none;
+  }
+</style>
+
+<script>
+  // Solo se ejecuta en el cliente
+  if (typeof window !== 'undefined') {
+    import('../scripts/auth.js');
+  }
+</script>
