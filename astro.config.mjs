@@ -1,10 +1,7 @@
 import { defineConfig } from 'astro/config';
+import { astroImageTools } from "astro-imagetools";
 
 export default defineConfig({
     site: 'https://celiachavezv.github.io/CelestiaCom/',
-  output: 'static',
-  trailingSlash: 'always',
-  build: {
-    format: 'directory'
-  }
+    integrations: [astroImageTools],
 });
