@@ -136,7 +136,7 @@ const pages = await getCollection('page');
   <header>
     <nav>
       <div class="nav-left">
-        <a href="/" class="logo" id="main-logo">
+        <a href="/CelestiaCom/" class="logo" id="main-logo">
           <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
             <circle cx="20" cy="20" r="19" stroke="currentColor" stroke-width="2"/>
             <path d="M12 20C12 25 16 28 20 28C24 28 28 25 28 20C28 15 24 12 20 12" stroke="currentColor" stroke-width="2"/>
@@ -146,7 +146,7 @@ const pages = await getCollection('page');
       </div>
 
       <div class="nav-right">
-        <a href="/login" class="auth-button login-button">
+        <a href="/CelestiaCom/login" class="auth-button login-button">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
             <polyline points="10 17 15 12 10 7"/>
@@ -154,7 +154,7 @@ const pages = await getCollection('page');
           </svg>
           Iniciar Sesión
         </a>
-        <a href="/register" class="auth-button register-button">
+        <a href="/CelestiaCom/register" class="auth-button register-button">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
@@ -176,19 +176,21 @@ const pages = await getCollection('page');
   </footer>
 
   <script is:inline>
+    // Configuración base para GitHub Pages
+    const basePath = '/CelestiaCom';
+    
     // Manejar clic en el logo
     document.getElementById('main-logo').addEventListener('click', function(e) {
       e.preventDefault();
-      if (window.location.pathname !== '/') {
-        window.location.href = '/';
+      if (!window.location.pathname.startsWith(`${basePath}/`)) {
+        window.location.href = `${basePath}/`;
       }
     });
 
-    // Manejar logout
-    document.getElementById('logout-btn')?.addEventListener('click', () => {
-      localStorage.removeItem('celestia_currentUser');
-      window.location.href = '/';
-    });
+    // Redirección inteligente para GitHub Pages
+    if (!window.location.pathname.startsWith(basePath) {
+      window.location.href = basePath + window.location.pathname;
+    }
   </script>
 </body>
 </html>
