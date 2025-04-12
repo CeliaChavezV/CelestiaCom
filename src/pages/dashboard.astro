@@ -1,0 +1,45 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Panel de Control">
+  <main class="dashboard-container">
+    <h1>Mis Estaciones</h1>
+    <div id="stations-list" class="stations-grid"></div>
+  </main>
+
+  <script type="module" is:inline>
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js';
+    import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js';
+    
+    const auth = getAuth();
+    const db = getFirestore();
+    const stationsContainer = document.getElementById('stations-list');
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = '/CelestiaCom/login';
+        return;
+      }
+
+      // Obtener estaciones del usuario
+      const q = query(collection(db, 'stations'), where('userId', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      
+      stationsContainer.innerHTML = '';
+      
+      querySnapshot.forEach((doc) => {
+        const station = doc.data();
+        stationsContainer.innerHTML += `
+          <div class="station-card">
+            <h3>${station.name}</h3>
+            <p>Frecuencia: ${station.frequency} MHz</p>
+            <button class="edit-btn" data-id="${doc.id}">
+              Editar Estación
+            </button>
+          </div>
+        `;
+      });
+    });
+  </script>
+</Layout>

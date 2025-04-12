@@ -10,7 +10,7 @@ const posts = await getCollection('blog');
 	<main>
 		<div class="blog-grid">
 			{posts.map(post => (
-				<a href={`/${post.slug}`} class="card-link">
+				<a href={`/CelestiaCom/${post.slug}/`} class="card-link">
 					<BlogCard
 						title={post.data.title}
 						description={post.data.description}
@@ -27,7 +27,7 @@ const posts = await getCollection('blog');
 		--azul-oscuro: #0a192f;
 		--azul-medio: #172a45;
 		--texto-claro: #e6f1ff;
-		--destacado: #64ffda; /* Color de acento para hover */
+		--destacado: #64ffda;
 	}
 	
 	main {
@@ -39,17 +39,21 @@ const posts = await getCollection('blog');
 	
 	.blog-grid {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 		gap: 2rem;
+		margin-top: 2rem;
 	}
 	
 	.card-link {
 		text-decoration: none;
-		transition: transform 0.3s ease;
+		transition: all 0.3s ease;
+		display: block;
+		height: 100%;
 	}
 	
 	.card-link:hover {
 		transform: translateY(-5px);
+		opacity: 0.9;
 	}
 	
 	@media (max-width: 1200px) {
@@ -70,3 +74,10 @@ const posts = await getCollection('blog');
 		}
 	}
 </style>
+
+<script is:inline>
+	// Verificación de ruta para GitHub Pages
+	if (!window.location.pathname.startsWith('/CelestiaCom')) {
+		window.location.href = '/CelestiaCom' + window.location.pathname;
+	}
+</script>
