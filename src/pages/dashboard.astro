@@ -1,5 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+// Cambia esta ruta según tu estructura real
+// Si dashboard.astro está en src/pages/, usa:
+import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Panel de Control">
@@ -8,38 +11,22 @@ import Layout from '../../layouts/Layout.astro';
     <div id="stations-list" class="stations-grid"></div>
   </main>
 
-  <script type="module" is:inline>
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js';
-    import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js';
-    
-    const auth = getAuth();
-    const db = getFirestore();
-    const stationsContainer = document.getElementById('stations-list');
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = '/CelestiaCom/login';
-        return;
-      }
-
-      // Obtener estaciones del usuario
-      const q = query(collection(db, 'stations'), where('userId', '==', user.uid));
-      const querySnapshot = await getDocs(q);
-      
-      stationsContainer.innerHTML = '';
-      
-      querySnapshot.forEach((doc) => {
-        const station = doc.data();
-        stationsContainer.innerHTML += `
-          <div class="station-card">
-            <h3>${station.name}</h3>
-            <p>Frecuencia: ${station.frequency} MHz</p>
-            <button class="edit-btn" data-id="${doc.id}">
-              Editar Estación
-            </button>
-          </div>
-        `;
-      });
-    });
+  <script is:inline>
+    // ... código de Firebase ...
   </script>
 </Layout>
+
+<style>
+  .dashboard-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+  }
+  
+  .stations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+</style>
