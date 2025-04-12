@@ -1,22 +1,141 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const isBrowser = typeof window !== 'undefined';
+const isLoggedIn = isBrowser ? !!localStorage.getItem('celestia_currentUser') : false;
+
+if (isBrowser && isLoggedIn) {
+  window.location.href = '/dashboard';
+}
 ---
 
-<Layout title="Iniciar Sesión">
-  <main style="max-width: 400px; margin: 2rem auto; padding: 2rem;">
-    <h2>Iniciar Sesión</h2>
-    <form>
-      <div style="margin-bottom: 1rem;">
-        <label style="display: block; margin-bottom: 0.5rem;">Correo Electrónico</label>
-        <input type="email" style="width: 100%; padding: 0.5rem;" required>
+<Layout title="Iniciar Sesión - CelestiaCom">
+  <main class="auth-container">
+    <form id="login-form" class="auth-form">
+      <h2>Iniciar Sesión</h2>
+      
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input 
+          type="email" 
+          id="login-email" 
+          required 
+          class="form-input"
+        />
       </div>
-      <div style="margin-bottom: 1rem;">
-        <label style="display: block; margin-bottom: 0.5rem;">Contraseña</label>
-        <input type="password" style="width: 100%; padding: 0.5rem;" required>
+      
+      <div class="form-group">
+        <label for="login-password">Contraseña</label>
+        <input 
+          type="password" 
+          id="login-password" 
+          required 
+          class="form-input"
+        />
       </div>
-      <button type="submit" style="width: 100%; padding: 0.75rem; background: #64ffda; border: none; border-radius: 4px;">
+      
+      <button type="submit" class="submit-button">
         Ingresar
       </button>
+      
+      <p class="auth-link">¿No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
     </form>
   </main>
 </Layout>
+
+<style>
+  .auth-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--azul-oscuro);
+    border-radius: 8px;
+    border: 1px solid var(--azul-medio);
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .form-input {
+    padding: 0.75rem;
+    background: var(--azul-profundo);
+    border: 1px solid var(--azul-medio);
+    border-radius: 4px;
+    color: var(--texto-claro);
+    font-size: 1rem;
+    width: 100%;
+  }
+  
+  .submit-button {
+    padding: 0.75rem;
+    background: var(--acento-verde);
+    color: var(--azul-profundo);
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  
+  .submit-button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  
+  .auth-link {
+    text-align: center;
+    color: var(--texto-secundario);
+  }
+  
+  .auth-link a {
+    color: var(--acento-verde);
+    text-decoration: none;
+  }
+  
+  .auth-link a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<script>
+  // Inicializar usuarios si no existen
+  if (!localStorage.getItem('celestia_users')) {
+    localStorage.setItem('celestia_users', JSON.stringify([
+      { 
+        id: 1, 
+        email: 'admin@celestia.com', 
+        password: 'admin123', 
+        estacion: 'Estación Central',
+        fechaRegistro: new Date().toISOString() 
+      }
+    ]));
+  }
+
+  // Manejar login
+  document.getElementById('login-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    const users = JSON.parse(localStorage.getItem('celestia_users') || []);
+    const user = users.find(u => u.email === email && u.password === password);
+
+    if (user) {
+      localStorage.setItem('celestia_currentUser', JSON.stringify(user));
+      window.location.href = '/CelestiaCom/dashboard/';  // Cambiado
+    } else {
+      alert('❌ Email o contraseña incorrectos');
+    }
+  });
+</script>

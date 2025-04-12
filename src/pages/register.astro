@@ -1,70 +1,30 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Registrar Estación">
-  <main class="auth-container">
-    <form id="register-form" class="auth-form">
-      <h2>Registrar Nueva Estación</h2>
-      
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" required class="form-input">
+  <main style="max-width: 400px; margin: 2rem auto; padding: 2rem;">
+    <h2>Registrar Nueva Estación</h2>
+    <form>
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem;">Nombre de la Estación</label>
+        <input type="text" style="width: 100%; padding: 0.5rem;" required>
       </div>
-      
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" required class="form-input">
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem;">Correo Electrónico</label>
+        <input type="email" style="width: 100%; padding: 0.5rem;" required>
       </div>
-      
-      <div class="form-group">
-        <label for="station-name">Nombre de Estación</label>
-        <input type="text" id="station-name" required class="form-input">
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem;">Contraseña</label>
+        <input type="password" style="width: 100%; padding: 0.5rem;" required>
       </div>
-
-      <div class="form-group">
-        <label for="frequency">Frecuencia (MHz)</label>
-        <input type="number" id="frequency" step="0.01" required class="form-input">
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem;">Banda de Frecuencia</label>
+        <input type="text" style="width: 100%; padding: 0.5rem;" placeholder="Ej: 144 MHz">
       </div>
-      
-      <button type="submit" class="submit-button">
+      <button type="submit" style="width: 100%; padding: 0.75rem; background: #64ffda; border: none; border-radius: 4px;">
         Registrar Estación
       </button>
     </form>
   </main>
-
-  <script type="module" is:inline>
-    import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js';
-    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js';
-    
-    const auth = getAuth();
-    const db = getFirestore();
-
-    document.getElementById('register-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const stationName = document.getElementById('station-name').value;
-      const frequency = parseFloat(document.getElementById('frequency').value);
-
-      try {
-        // 1. Registrar usuario
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        
-        // 2. Guardar datos de la estación
-        await addDoc(collection(db, 'stations'), {
-          userId: userCredential.user.uid,
-          name: stationName,
-          frequency: frequency,
-          createdAt: new Date()
-        });
-
-        alert('Estación registrada con éxito!');
-        window.location.href = '/CelestiaCom/dashboard';
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-      }
-    });
-  </script>
 </Layout>
